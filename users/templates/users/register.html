@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">Inscription</h3>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="username" class="form-label">Nom d'utilisateur</label>
+              <input type="text" name="username" id="username" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" name="email" id="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="role" class="form-label">Rôle</label>
+              <select name="role" id="role" class="form-select" required>
+                <option value="" selected disabled>Choisir votre rôle</option>
+                <option value="client">Client</option>
+                <option value="provider">Prestataire</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="password1" class="form-label">Mot de passe</label>
+              <input type="password" name="password1" id="password1" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="password2" class="form-label">Confirmer le mot de passe</label>
+              <input type="password" name="password2" id="password2" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+          </form>
+
+          <hr class="my-3">
+
+          <p class="text-center mt-3">
+            Déjà inscrit ? <a href="{% url 'users:login' %}">Connectez-vous</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
