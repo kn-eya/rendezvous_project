@@ -2,7 +2,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-# Charger les variables d'environnement
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,17 +18,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Mes apps
+    # Apps
     'users',
     'appointments',
     'dashboard',
 
-    # Authentification sociale
+    # Allauth social login
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
+     "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -38,7 +38,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # ✅ OBLIGATOIRE pour Django Allauth
+    'allauth.account.middleware.AccountMiddleware',  # <- ajouté ici
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -79,11 +79,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',          
-    'allauth.account.auth_backends.AuthenticationBackend'
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
+
 SITE_ID = 1
 
-LOGIN_REDIRECT_URL = '/appointments/services/'
+LOGIN_REDIRECT_URL = '/users/social-login-redirect/'
 LOGOUT_REDIRECT_URL = '/users/login/'
 
 LANGUAGE_CODE = 'en-us'
@@ -93,13 +94,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-
-# 📨 EMAIL - à partir du .env
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

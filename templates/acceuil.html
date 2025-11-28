@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Accueil - AlloRDV{% endblock %}
+
+{% block content %}
+
+<!-- ===== Hero Section ===== -->
+<section class="hero-section text-center py-5" style="background: linear-gradient(135deg,#00b894,#6c5ce7); color: white;">
+  <div class="container">
+    <h1 class="display-4 fw-bold">Bienvenue sur AlloRDV</h1>
+    <p class="lead mb-4">Réservez vos services rapidement : santé, bien-être, sport, coiffure et plus encore.</p>
+    <a href="{% url 'appointments:single_booking' %}" class="btn btn-light btn-lg shadow-sm">Réserver maintenant</a>
+  </div>
+</section>
+
+<!-- ===== Services Section ===== -->
+<section id="services-section" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-5">Nos Services</h2>
+    <div class="row g-4">
+      {% for service in services %}
+      <div class="col-md-3">
+        <div class="card text-center h-100 shadow-sm border-0 rounded-4 hover-scale">
+          {% if service.icon %}
+          <img src="{{ service.icon.url }}" class="card-img-top mx-auto mt-4" style="width:80px; height:80px; object-fit:cover; border-radius:50%;" alt="{{ service.name }}">
+          {% else %}
+          <img src="/static/default_service.png" class="card-img-top mx-auto mt-4" style="width:80px; height:80px; object-fit:cover; border-radius:50%;" alt="{{ service.name }}">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title fw-bold">{{ service.name }}</h5>
+            <p class="card-text text-muted">{{ service.description|truncatechars:60 }}</p>
+           <a href="{% url 'appointments:single_booking' service.id %}">Réserver</a>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== About Section ===== -->
+<section id="about-section" class="py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4">
+        <h2 class="fw-bold mb-3">À propos de notre plateforme</h2>
+        <p class="text-muted">AlloRDV est une plateforme multiservices qui vous permet de réserver rapidement des prestataires pour vos besoins quotidiens : santé, coiffure, bien-être, sport, et plus encore.</p>
+        <ul class="list-unstyled mt-3">
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Sécurité maximale pour vos données</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Réservation rapide et simple</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Support 24/7 pour vos questions</li>
+        </ul>
+      </div>
+      <div class="col-md-6 text-center">
+        <img src="/static/images/about_illustration.png" alt="À propos" class="img-fluid rounded-4 shadow-sm">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Testimonials Section ===== -->
+<section id="testimonials-section" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-5">Témoignages</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm rounded-4">
+          <p class="mb-3">"Service rapide et professionnel. Je recommande !"</p>
+          <h6 class="fw-bold">Alice D.</h6>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm rounded-4">
+          <p class="mb-3">"Réserver un massage n'a jamais été aussi simple."</p>
+          <h6 class="fw-bold">Marc L.</h6>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm rounded-4">
+          <p class="mb-3">"Plateforme pratique et facile à utiliser."</p>
+          <h6 class="fw-bold">Sophie T.</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Newsletter Section ===== -->
+<section id="newsletter-section" class="py-5 text-white" style="background: linear-gradient(135deg,#00b894,#6c5ce7);">
+  <div class="container text-center">
+    <h2 class="mb-3 fw-bold">Inscrivez-vous à notre Newsletter</h2>
+    <p class="mb-4">Recevez les dernières nouveautés et promotions directement dans votre boîte mail.</p>
+    <form class="row justify-content-center g-2">
+      <div class="col-md-4">
+        <input type="email" class="form-control rounded-pill" placeholder="Votre email" required>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-light w-100 rounded-pill shadow-sm" type="submit">S'inscrire</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ===== Contact Section ===== -->
+<section id="contact-section" class="py-5 bg-white">
+  <div class="container">
+    <h2 class="text-center mb-5 fw-bold">Nous contacter</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <form>
+          <div class="mb-3">
+            <input type="text" class="form-control rounded-3" placeholder="Nom" required>
+          </div>
+          <div class="mb-3">
+            <input type="email" class="form-control rounded-3" placeholder="Email" required>
+          </div>
+          <div class="mb-3">
+            <textarea class="form-control rounded-3" rows="4" placeholder="Message" required></textarea>
+          </div>
+          <button class="btn btn-primary w-100 rounded-3 shadow-sm">Envoyer</button>
+        </form>
+      </div>
+      <div class="col-md-6">
+        <!-- Google Maps SupTech -->
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10480.123456!2d10.000000!3d36.800000!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12e2abcde1234567%3A0xabcdef1234567890!2sSupTech!5e0!3m2!1sfr!2stn!4v0000000000000" 
+                width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy" 
+                class="rounded-4 shadow-sm"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

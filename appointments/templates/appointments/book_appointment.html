@@ -1,11 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
-  <h2>Réserver avec {{ provider.user.username }}</h2>
-  <form method="post">
+<h2>Réserver avec {{ provider.user.username }}</h2>
+
+<form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Réserver</button>
-  </form>
-</div>
+    <div>
+        <label>Service :</label>
+        <select name="service">
+            {% for s in services %}
+                <option value="{{ s.id }}">{{ s.name }} - {{ s.price }} DT</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label>Date :</label>
+        <input type="date" name="date" required>
+    </div>
+    <div>
+        <label>Heure :</label>
+        <input type="time" name="time" required>
+    </div>
+    <button type="submit">Réserver</button>
+</form>
 {% endblock %}

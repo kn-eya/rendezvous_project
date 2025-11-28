@@ -2,10 +2,18 @@
 {% block content %}
 <div class="container mt-4">
   <h2>Dashboard Prestataire</h2>
+  
+  <div class="mb-3">
+    <a href="{% url 'appointments:provider_edit_profile' %}" class="btn btn-primary">
+      Modifier mon profil & Services
+    </a>
+  </div>
+
   <table class="table table-striped">
     <thead>
       <tr>
         <th>Client</th>
+        <th>Service</th>
         <th>Date</th>
         <th>Heure</th>
         <th>Statut</th>
@@ -16,6 +24,7 @@
       {% for appt in appointments %}
       <tr>
         <td>{{ appt.client.username }}</td>
+        <td>{{ appt.service.name }}</td>
         <td>{{ appt.date }}</td>
         <td>{{ appt.time }}</td>
         <td>{{ appt.get_status_display }}</td>

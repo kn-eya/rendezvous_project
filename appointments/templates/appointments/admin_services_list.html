@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestion des Services & Catégories</h2>
+
+    <!-- Boutons d'action -->
+    <div class="mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#serviceModal" id="addServiceBtn">+ Ajouter Service</button>
+    </div>
+
+    <!-- TABLE SERVICES -->
+    <h4>Liste des services</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Actif</th>
+                <th>Catégories</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+            <tr data-service-id="{{ service.id }}">
+                <td class="service-name">{{ service.name }}</td>
+                <td class="service-desc">{{ service.description }}</td>
+                <td class="service-active">{{ service.is_active|yesno:"Oui,Non" }}</td>
+                <td>
+                    <ul>
+                        {% for category in service.category_set.all %}
+                        <li data-category-id="{{ category.id }}">
+                            <span class="category-name">{{ category.name }}</span> - 
+                            <span class="category-price">{{ category.price }}</span>€
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-warning editServiceBtn" data-service-id="{{ service.id }}" data-bs-toggle="modal" data-bs-target="#serviceModal">Modifier</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- MODAL AJOUT/MODIFICATION SERVICE + CATEGORIES -->
+<div class="modal fade" id="serviceModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="create_service" id="modal-create-service" value="1">
+        <input type="hidden" name="edit_service" id="modal-edit-service-id" value="">
+        <div class="modal-header">
+          <h5 class="modal-title">Ajouter / Modifier Service</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <h6>Service</h6>
+          {{ service_form.as_p }}
+
+          <hr>
+          <h6>Catégories</h6>
+          <div id="categories-container">
+            {{ category_formset.management_form }}
+            {% for form in category_formset %}
+            <div class="category-form border p-2 mb-2">
+              {{ form.as_p }}
+              <button type="button" class="btn btn-danger btn-sm remove-category">Supprimer</button>
+            </div>
+            {% endfor %}
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="add-category">+ Ajouter catégorie</button>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let container = document.getElementById('categories-container');
+  let addBtn = document.getElementById('add-category');
+  let formTemplate = container.querySelector('.category-form').cloneNode(true);
+
+  // Ajouter une nouvelle catégorie
+  addBtn.addEventListener('click', function() {
+    let totalForms = container.querySelector('#id_form-TOTAL_FORMS');
+    let currentFormCount = parseInt(totalForms.value);
+
+    let newForm = formTemplate.cloneNode(true);
+    newForm.innerHTML = newForm.innerHTML.replace(/form-0-/g, `form-${currentFormCount}-`);
+    newForm.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
+
+    container.appendChild(newForm);
+    totalForms.value = currentFormCount + 1;
+
+    newForm.querySelector('.remove-category').addEventListener('click', function() {
+      newForm.remove();
+      totalForms.value = parseInt(totalForms.value) - 1;
+    });
+  });
+
+  // Supprimer catégorie existante
+  container.querySelectorAll('.remove-category').forEach(btn => {
+    btn.addEventListener('click', function() {
+      btn.closest('.category-form').remove();
+      let totalForms = container.querySelector('#id_form-TOTAL_FORMS');
+      totalForms.value = parseInt(totalForms.value) - 1;
+    });
+  });
+
+  // Préparer modal pour modification d'un service
+  document.querySelectorAll('.editServiceBtn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      let row = btn.closest('tr');
+      let serviceId = btn.dataset.serviceId;
+
+      // Modifier hidden input
+      document.getElementById('modal-create-service').value = "";
+      document.getElementById('modal-edit-service-id').value = serviceId;
+
+      // Remplir formulaire avec les valeurs existantes
+      document.getElementById('id_name').value = row.querySelector('.service-name').textContent.trim();
+      document.getElementById('id_description').value = row.querySelector('.service-desc').textContent.trim();
+      document.getElementById('id_is_active').checked = row.querySelector('.service-active').textContent.trim() === "Oui";
+
+      // Supprimer toutes catégories actuelles
+      container.querySelectorAll('.category-form').forEach(cf => cf.remove());
+      let totalForms = container.querySelector('#id_form-TOTAL_FORMS');
+      totalForms.value = 0;
+
+      // Ajouter les catégories existantes
+      row.querySelectorAll('td ul li').forEach((li, index) => {
+        let newForm = formTemplate.cloneNode(true);
+        newForm.innerHTML = newForm.innerHTML.replace(/form-0-/g, `form-${index}-`);
+        newForm.querySelector('input[name$="name"]').value = li.querySelector('.category-name').textContent.trim();
+        newForm.querySelector('input[name$="price"]').value = li.querySelector('.category-price').textContent.trim();
+        container.appendChild(newForm);
+      });
+      totalForms.value = row.querySelectorAll('td ul li').length;
+    });
+  });
+});
+</script>
+{% endblock %}

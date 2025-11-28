@@ -1,11 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-
-ROLE_CHOICES = (
-    ('client', 'Client'),
-    ('provider', 'Prestataire'),
-)
+from .models import ROLE_CHOICES
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.profile-container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.profile-container h2 { text-align:center; margin-bottom:25px; font-size:28px; font-weight:600; }
+.form-group { margin-bottom: 15px; }
+label { font-weight: 500; }
+input.form-control, select.form-control, textarea.form-control {
+    width:100%; padding:8px 12px; border-radius:12px; border:1px solid #ccc;
+}
+button.btn-save {
+    background: linear-gradient(135deg,#6c5ce7,#00b894); color:#fff; border:none;
+    padding:10px 25px; border-radius:25px; font-weight:500; cursor:pointer; transition:0.3s;
+}
+button.btn-save:hover { transform: scale(1.05); }
+
+.availability-card {
+    background:#f9f9f9; padding:15px; border-radius:15px; margin-bottom:10px;
+    display:flex; gap:15px; align-items:center;
+}
+.availability-card input, .availability-card select { flex:1; }
+.delete-btn {
+    background:#e74c3c; border:none; color:#fff; padding:5px 10px; border-radius:12px; cursor:pointer;
+}
+.add-btn {
+    background:#0984e3; border:none; color:#fff; padding:8px 15px; border-radius:12px; cursor:pointer;
+    margin-bottom: 15px;
+}
+</style>
+
+<div class="profile-container">
+    <h2>🛠️ Modifier mon profil prestataire</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Service et Catégorie -->
+        <div class="form-group">
+            <label for="id_service">Service général</label>
+            {{ provider_form.service }}
+        </div>
+        <div class="form-group">
+            <label for="id_category">Catégorie</label>
+            {{ provider_form.category }}
+        </div>
+
+        <!-- Infos prestataire -->
+        <div class="form-group">
+            <label for="id_phone">Téléphone</label>
+            {{ provider_form.phone }}
+        </div>
+        <div class="form-group">
+            <label for="id_city">Ville</label>
+            {{ provider_form.city }}
+        </div>
+        <div class="form-group">
+            <label for="id_address">Adresse</label>
+            {{ provider_form.address }}
+        </div>
+        <div class="form-group">
+            <label for="id_photo">Photo</label>
+            {{ provider_form.photo }}
+        </div>
+
+        <!-- Disponibilités -->
+        <h3>🗓️ Mes disponibilités</h3>
+        <button type="button" class="add-btn" id="add-availability">➕ Ajouter une disponibilité</button>
+        <div id="availability-list">
+            {% for form in availability_formset %}
+            <div class="availability-card">
+                {{ form.day_of_week }} {{ form.start_time }} {{ form.end_time }}
+                {% if form.instance.pk %}
+                    <input type="checkbox" name="{{ form.prefix }}-DELETE"> Supprimer
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn-save mt-3">💾 Enregistrer</button>
+    </form>
+</div>
+
+<script>
+// ===========================
+// Filtrage catégorie selon service
+// ===========================
+const serviceSelect = document.getElementById("id_service");
+const categorySelect = document.getElementById("id_category");
+
+function loadCategories(serviceId, selectedCategoryId=null){
+    fetch(`/appointments/ajax/get_categories/?service_id=${serviceId}`)
+    .then(res=>res.json())
+    .then(data=>{
+        categorySelect.innerHTML = "";
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "-- Choisir une catégorie --";
+        categorySelect.appendChild(defaultOption);
+
+        data.forEach(c=>{
+            const option = document.createElement("option");
+            option.value = c.id;
+            option.textContent = c.name;
+            if(selectedCategoryId && c.id == selectedCategoryId){
+                option.selected = true;
+            }
+            categorySelect.appendChild(option);
+        });
+    });
+}
+
+if(serviceSelect.value){
+    loadCategories(serviceSelect.value, "{{ provider_form.instance.category.id|default:'' }}");
+}
+
+serviceSelect.addEventListener("change", function(){
+    const serviceId = this.value;
+    if(serviceId){
+        loadCategories(serviceId);
+    } else {
+        categorySelect.innerHTML = "<option value=''>-- Choisir une catégorie --</option>";
+    }
+});
+
+// ===========================
+// Ajouter / Supprimer disponibilités dynamiquement
+// ===========================
+const addBtn = document.getElementById("add-availability");
+const availabilityList = document.getElementById("availability-list");
+
+addBtn.addEventListener("click", function(){
+    const card = document.createElement("div");
+    card.classList.add("availability-card");
+    card.innerHTML = `
+        <select name="day_of_week" class="form-control" required>
+            <option value="">-- Jour --</option>
+            <option value="Mon">Lundi</option>
+            <option value="Tue">Mardi</option>
+            <option value="Wed">Mercredi</option>
+            <option value="Thu">Jeudi</option>
+            <option value="Fri">Vendredi</option>
+            <option value="Sat">Samedi</option>
+            <option value="Sun">Dimanche</option>
+        </select>
+        <input type="time" name="start_time" class="form-control" required>
+        <input type="time" name="end_time" class="form-control" required>
+        <button type="button" class="delete-btn">🗑️</button>
+    `;
+    availabilityList.appendChild(card);
+
+    // Supprimer la disponibilité
+    card.querySelector(".delete-btn").addEventListener("click", function(){
+        card.remove();
+    });
+});
+</script>
+
+{% endblock %}

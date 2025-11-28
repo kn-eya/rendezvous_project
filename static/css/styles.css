@@ -1,120 +1,182 @@
-/* ----------------------------- */
-/* RESET + FONT */
-/* ----------------------------- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+/* ===== Variables de couleurs ===== */
+:root {
+    --color-primary: #00b894;       /* turquoise */
+    --color-secondary: #6c5ce7;     /* violet */
+    --color-gradient: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    --color-bg: #f5f7fa;            /* gris clair pour sections neutres */
+    --color-light: #ffffff;          /* blanc */
+    --color-dark: #1f2937;           /* gris foncé pour texte et navbar/footer */
+    --color-text: #333333;           /* texte principal */
+    --color-muted: #6c757d;          /* texte secondaire */
 }
 
+/* ===== Général ===== */
 body {
-    background-color: #f4f4f4;
-    color: #333;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    margin: 0;
 }
 
-/* ----------------------------- */
-/* NAVBAR */
-/* ----------------------------- */
-
-nav {
-    background-color: #222;
-    padding: 15px 0;
-}
-
-nav .container {
-    width: 90%;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-nav .navbar-brand {
-    color: white;
+a {
     text-decoration: none;
-    font-size: 22px;
+    color: inherit;
+}
+
+/* ===== Titres ===== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-dark);
     font-weight: 600;
 }
 
-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
+/* ===== Navbar ===== */
+.navbar {
+    background-color: var(--color-dark);
 }
 
-nav ul li a {
-    color: #ddd;
-    text-decoration: none;
-    font-size: 16px;
-    transition: 0.3s;
+.navbar .nav-link {
+    color: var(--color-light);
+    transition: color 0.3s;
 }
 
-nav ul li a:hover {
-    color: white;
+.navbar .nav-link:hover {
+    color: var(--color-primary);
 }
 
-/* ----------------------------- */
-/* MAIN CONTENT */
-/* ----------------------------- */
-
-main {
-    width: 90%;
-    margin: 25px auto;
-    flex-grow: 1;
-}
-
-.card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* FORM STYLE */
-form {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.08);
-}
-
-form input, form select, form textarea {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    outline: none;
-}
-
-form button {
-    background-color: #222;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    width: 100%;
-    transition: 0.3s;
-}
-
-form button:hover {
-    background-color: #444;
-}
-
-/* ----------------------------- */
-/* FOOTER */
-/* ----------------------------- */
-
-footer {
-    background-color: #222;
-    color: white;
+/* ===== Hero Section ===== */
+.hero-section {
+    background: var(--color-gradient);
+    color: var(--color-light);
     text-align: center;
-    padding: 15px;
-    margin-top: auto;
-    font-size: 14px;
+    padding: 5rem 1rem;
+}
+
+.hero-section .btn {
+    border-radius: 50px;
+    font-weight: bold;
+    padding: 0.75rem 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+}
+
+.hero-section .btn:hover {
+    transform: translateY(-3px);
+}
+
+/* ===== Cartes (cards) ===== */
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* ===== Boutons ===== */
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-light);
+}
+
+.btn-primary:hover {
+    background-color: #009f7f;
+    border-color: #009f7f;
+}
+
+.btn-success {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: var(--color-light);
+}
+
+.btn-success:hover {
+    background-color: #5945c7;
+    border-color: #5945c7;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    color: var(--color-light);
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+/* ===== Formulaires ===== */
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 1px solid #ced4da;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0,184,148,0.25);
+}
+
+/* ===== Footer ===== */
+footer {
+    background-color: var(--color-dark);
+    color: var(--color-light);
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+footer a {
+    color: var(--color-primary);
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: var(--color-secondary);
+}
+
+/* ===== Sections ===== */
+section {
+    padding: 5rem 1rem;
+}
+
+/* Sections à fond coloré (hero, newsletter, contact) */
+section.bg-gradient {
+    background: var(--color-gradient);
+    color: var(--color-light);
+}
+
+/* Sections neutres */
+section.bg-light {
+    background-color: var(--color-bg);
+}
+
+/* ===== Newsletter ===== */
+#newsletter-section input {
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+}
+
+#newsletter-section button {
+    border-radius: 50px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 576px) {
+    .card {
+        margin: 0 1rem;
+    }
+
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+
+    .hero-section p {
+        font-size: 1rem;
+    }
 }

@@ -17,9 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from appointments import views
+
 urlpatterns = [
+     path("", views.acceuil, name="acceuil"),  # Page d'accueil
+    
+    
     path('admin/', admin.site.urls),
-    path('users/', include('users.urls')),
+    path('users/', include('users.urls', namespace='users')),
     path('appointments/', include('appointments.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('accounts/', include('allauth.urls')),  # login social

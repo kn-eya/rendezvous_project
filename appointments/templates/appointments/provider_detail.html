@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="provider-card">
+
+    <!-- Photo et nom -->
+    <header class="provider-header text-center">
+        {% if provider.photo %}
+            <img src="{{ provider.photo.url }}" alt="{{ provider.user.username }}">
+        {% else %}
+            <img src="/static/default_profile.png" alt="{{ provider.user.username }}">
+        {% endif %}
+        <h2>{{ provider.user.username }}</h2>
+        <p><strong>Téléphone:</strong> {{ provider.phone }}</p>
+    </header>
+
+    <!-- Services proposés -->
+    <section class="provider-services text-center mt-3">
+        <h3>Services proposés:</h3>
+        {% if provider.services.exists %}
+            <p>
+                {% for s in provider.services.all %}
+                    <span class="service-badge">{{ s.name }}</span>
+                {% endfor %}
+            </p>
+        {% else %}
+            <p>Aucun service disponible</p>
+        {% endif %}
+    </section>
+
+    <!-- Bouton réservation -->
+    <div class="provider-book text-center mt-3">
+        <a href="{% url 'appointments:book_appointment' provider.id %}" class="btn-book">📅 Réserver</a>
+    </div>
+
+    <!-- Galerie -->
+    {% if provider.gallery.exists %}
+    <section class="provider-gallery mt-4">
+        <h3>🖼️ Galerie</h3>
+        <div class="gallery-filters mb-3">
+            <button class="filter-btn active" data-filter="all">Tous</button>
+            <button class="filter-btn" data-filter="travail">Travail</button>
+            <button class="filter-btn" data-filter="clients">Clients</button>
+        </div>
+        <div class="gallery">
+            {% for photo in provider.gallery.all %}
+                <img src="{{ photo.image.url }}" alt="Photo {{ forloop.counter }}" data-type="{{ photo.type }}">
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Avis clients -->
+    {% if provider.reviews.exists %}
+    <section class="provider-reviews mt-4">
+        <h3>⭐ Avis clients</h3>
+        <div class="reviews-list">
+            {% for r in provider.reviews.all %}
+                <article class="review-card">
+                    <p class="stars">{% for i in "12345"|slice:":r.rating" %}⭐{% endfor %}</p>
+                    <p>{{ r.comment }}</p>
+                    <p><strong>{{ r.user.username }}</strong></p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+
+<script>
+// Filtrer la galerie
+const filterBtns = document.querySelectorAll('.filter-btn');
+const galleryImgs = document.querySelectorAll('.gallery img');
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.getAttribute('data-filter');
+
+        galleryImgs.forEach(img => {
+            img.style.display = (filter === 'all' || img.getAttribute('data-type') === filter) ? 'block' : 'none';
+        });
+    });
+});
+</script>
+
+{% endblock %}
