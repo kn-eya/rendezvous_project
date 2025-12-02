@@ -18,6 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 from appointments import views
+from rendezvous_project import settings
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
      path("", views.acceuil, name="acceuil"),  # Page d'accueil
@@ -28,4 +31,8 @@ urlpatterns = [
     path('appointments/', include('appointments.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('accounts/', include('allauth.urls')),  # login social
+    
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

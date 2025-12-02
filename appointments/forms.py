@@ -1,18 +1,20 @@
 from django import forms
 from .models import Appointment, Provider, Service, Availability, Category
 
+
 # =====================
 # Formulaire de rendez-vous
 # =====================
 class AppointmentForm(forms.ModelForm):
     class Meta:
         model = Appointment
-        fields = ['category', 'provider', 'date', 'time', 'notes']
+        fields = ['date', 'time', 'notes']  # plus besoin de provider/category ici
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
         }
+
 
 # =====================
 # Formulaire du prestataire

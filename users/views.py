@@ -59,15 +59,15 @@ def redirect_after_login(request, user):
 
     role = getattr(user.profile, 'role', 'client')
     if role == 'client':
-        return redirect('appointments:single_booking')  # client → booking
+        return redirect('appointments:services_list')  # client → booking
     elif role == 'provider':
         return redirect('appointments:provider_edit_profile')  # prestataire → éditer profil
     else:
-        return redirect('appointments:single_booking')
+        return redirect('appointments:services_list')
 
 # -------------------
 # Logout
 # -------------------
 def logout_view(request):
     logout(request)
-    return redirect('users:login')
+    return redirect('acceuil')

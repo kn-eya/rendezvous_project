@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from . import views
 
 app_name = 'appointments'
@@ -6,7 +6,8 @@ app_name = 'appointments'
 urlpatterns = [
     # Page d'accueil
     path("", views.acceuil, name="acceuil"),
-    
+   
+
     # Liste des services
     path('services/', views.services_list, name='services_list'),
     
@@ -42,6 +43,10 @@ path("admin/services/", views.admin_services_list, name="admin_services_list"),
 
 path('single-booking/<int:service_id>/', views.single_page_booking, name='single_booking'),
 
-
+path('ajax/get_services/', views.ajax_get_services, name='ajax_get_services'),
+   
+path("provider/dashboard/", views.provider_dashboard, name="provider_dashboard"),
+  path("notifications/", views.notifications_page, name="notifications_page"),
+     path('ajax/unread-count/', views.ajax_unread_count, name='ajax_unread_count'),
 
 ]

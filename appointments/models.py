@@ -39,7 +39,7 @@ class Provider(models.Model):
     def __str__(self):
         return self.user.username
 
-# -------------------------
+# ------------a-------------
 # Disponibilités du prestataire
 # -------------------------
 class Availability(models.Model):
@@ -62,7 +62,8 @@ class Appointment(models.Model):
     STATUS_CHOICES = [
         ('pending', 'En attente'),
         ('accepted', 'Accepté'),
-        ('refused', 'Refusé')
+        ('refused', 'Refusé'),
+        ('cancelled', 'Annulé')
     ]
 
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="appointments")

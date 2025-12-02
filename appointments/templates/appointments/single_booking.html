@@ -1,247 +1,90 @@
 {% extends "base.html" %}
+{% block title %}Réserver Rendez-vous{% endblock %}
+
 {% block content %}
+<div class="container mt-5">
+    <h2>Réserver un rendez-vous pour {{ service.name }}</h2>
 
-<style>
-body{
-    background: linear-gradient(135deg,#00b894,#6c5ce7);
-}
-
-/* Container */
-.booking-container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-}
-
-/* Formulaire */
-.booking-form {
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 25px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-}
-
-/* Popup */
-.popup-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-}
-
-.popup-box {
-    background: #fff;
-    width: 95%;
-    max-width: 1000px;
-    border-radius: 25px;
-    padding: 25px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-    animation: zoomIn 0.4s ease;
-}
-
-@keyframes zoomIn{
-    from{transform:scale(0.9);opacity:0;}
-    to{transform:scale(1);opacity:1;}
-}
-
-/* Service cards */
-.card {
-    width: 220px;
-    background: #f9fafb;
-    border-radius: 20px;
-    text-align: center;
-    padding: 15px;
-    transition: 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-}
-
-.card:hover {
-    transform: translateY(-8px);
-}
-
-/* Image prestataire */
-.card img {
-    width: 90px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 3px solid #6c5ce7;
-}
-
-/* Rating */
-.stars {
-    color: #f1c40f;
-    font-size: 14px;
-    margin: 3px 0;
-}
-
-/* Boutons */
-.profile-btn, .choose-btn {
-    background: linear-gradient(135deg,#00b894,#6c5ce7);
-    border: none;
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    cursor: pointer;
-    margin: 4px;
-    transition: 0.2s;
-    text-decoration:none;
-}
-.profile-btn:hover, .choose-btn:hover {
-    transform: scale(1.05);
-}
-
-.selected-provider {
-    border: 2px solid #6c5ce7;
-    background: #eef7ff;
-}
-
-/* Toast confirmation */
-#toast {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: #00b894;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 20px;
-    display: none;
-}
-
-/* Close */
-.close-btn {
-    position:absolute;
-    top:10px;
-    right:15px;
-}
-.close-btn button{
-    background:#ddd;
-    border:none;
-    border-radius:12px;
-    padding:6px 10px;
-}
-</style>
-
-
-<div class="booking-container">
-    <h2 class="text-center text-white mb-4">🚀 Réserver un service</h2>
-
-    <form method="POST" class="booking-form">
+    <form method="post" class="mt-4">
         {% csrf_token %}
 
+        <!-- Choisir la catégorie -->
         <div class="mb-3">
-            <label>Catégorie</label>
-            <select id="categorySelect" class="form-select" required>
-                <option value="">-- Choisir une catégorie --</option>
-                {% for c in categories %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
+            <label for="category" class="form-label">Catégorie</label>
+            <select name="category" id="category" class="form-select" required>
+                <option value="">-- Sélectionner --</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }} - {{ cat.price }} DT</option>
                 {% endfor %}
             </select>
         </div>
 
-        <input type="hidden" name="provider" id="providerInput">
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label>Date</label>
-                <input type="date" name="date" class="form-control" required>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label>Heure</label>
-                <input type="time" name="time" class="form-control" required>
-            </div>
+        <!-- Choisir le prestataire -->
+        <div class="mb-3">
+            <label for="provider" class="form-label">Prestataire</label>
+            <select name="provider" id="provider" class="form-select" required>
+                <option value="">-- Sélectionner --</option>
+                {% for p in providers %}
+                    <option value="{{ p.id }}">{{ p.user.username }} {% if p.city %} ({{ p.city }}) {% endif %}</option>
+                {% endfor %}
+            </select>
         </div>
 
-        <button type="submit" class="btn btn-success w-100 mt-2">✅ Confirmer</button>
+        <!-- Date et Heure -->
+        <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" name="date" id="date" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="time" class="form-label">Heure</label>
+            <input type="time" name="time" id="time" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="notes" class="form-label">Notes (optionnel)</label>
+            <textarea name="notes" rows="3" class="form-control"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Réserver</button>
     </form>
+
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>
-
-
-<div class="popup-overlay" id="servicesPopup">
-    <div class="popup-box" id="servicesContainer"></div>
-</div>
-
-<div id="toast">Prestataire sélectionné ✅</div>
-
-
 <script>
-const categorySelect = document.getElementById('categorySelect');
-const providerInput = document.getElementById('providerInput');
-const servicesPopup = document.getElementById('servicesPopup');
-const servicesContainer = document.getElementById('servicesContainer');
-const toast = document.getElementById('toast');
+document.addEventListener("DOMContentLoaded", function() {
+    const categorySelect = document.getElementById("category");
+    const providerSelect = document.getElementById("provider");
 
-function showToast(){
-    toast.style.display = 'block';
-    setTimeout(()=> toast.style.display='none',2000);
-}
+    categorySelect.addEventListener("change", function() {
+        const categoryId = this.value;
 
-function closePopup(){
-    servicesPopup.style.display = 'none';
-}
+        if (!categoryId) {
+            providerSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+            return;
+        }
 
-categorySelect.addEventListener('change', function(){
-    const catId = this.value;
-    if(!catId) return;
-
-    fetch(`/appointments/ajax/get_services/?category_id=${catId}`)
-    .then(res=>res.json())
-    .then(services=>{
-        servicesContainer.innerHTML=`
-        <div class="close-btn">
-            <button onclick="closePopup()">✖</button>
-        </div>`;
-
-        services.forEach(service=>{
-            const serviceDiv = document.createElement('div');
-            serviceDiv.className = "card";
-            serviceDiv.innerHTML = `
-                <h5>${service.name}</h5>
-                <p>Prestataires :</p>
-                <div id="providers-${service.id}"></div>
-            `;
-            servicesContainer.appendChild(serviceDiv);
-
-            fetch(`/appointments/ajax/get_providers/?service_id=${service.id}`)
-            .then(res=>res.json())
-            .then(providers=>{
-                const box = document.getElementById(`providers-${service.id}`);
-                box.innerHTML='';
-
-                providers.forEach(p=>{
-                    let providerHTML = document.createElement('div');
-                    providerHTML.className = "provider-box";
-
-                    providerHTML.innerHTML = `
-                        <img src="${p.photo || '/static/default.png'}">
-                        <h6>${p.name}</h6>
-                        <div class="stars">⭐⭐⭐⭐☆</div>
-                        <button class="choose-btn">Choisir</button>
-                        <a class="profile-btn" href="${p.profile_url}" target="_blank">Voir profil</a>
-                    `;
-
-                    providerHTML.querySelector(".choose-btn").onclick=()=>{
-                        providerInput.value = p.id;
-                        document.querySelectorAll('.provider-box').forEach(el=>el.classList.remove('selected-provider'));
-                        providerHTML.classList.add('selected-provider');
-                        showToast();
-                    };
-
-                    box.appendChild(providerHTML);
+        // Appel AJAX pour récupérer les prestataires de cette catégorie
+        fetch(`/appointments/ajax_get_providers/?category_id=${categoryId}`)
+            .then(response => response.json())
+            .then(data => {
+                providerSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+                data.forEach(p => {
+                    const option = document.createElement("option");
+                    option.value = p.id;
+                    option.textContent = p.name + (p.city ? ` (${p.city})` : '');
+                    providerSelect.appendChild(option);
                 });
+            })
+            .catch(err => {
+                console.error("Erreur AJAX:", err);
             });
-        });
-
-        servicesPopup.style.display='flex';
     });
 });
 </script>

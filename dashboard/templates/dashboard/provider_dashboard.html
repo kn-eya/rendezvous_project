@@ -3,17 +3,12 @@
 <div class="container mt-4">
   <h2>Dashboard Prestataire</h2>
   
-  <div class="mb-3">
-    <a href="{% url 'appointments:provider_edit_profile' %}" class="btn btn-primary">
-      Modifier mon profil & Services
-    </a>
-  </div>
-
   <table class="table table-striped">
     <thead>
       <tr>
         <th>Client</th>
         <th>Service</th>
+        <th>Catégorie</th>
         <th>Date</th>
         <th>Heure</th>
         <th>Statut</th>
@@ -24,16 +19,21 @@
       {% for appt in appointments %}
       <tr>
         <td>{{ appt.client.username }}</td>
-        <td>{{ appt.service.name }}</td>
+        <td>{{ appt.category.service.name }}</td>
+        <td>{{ appt.category.name }}</td>
         <td>{{ appt.date }}</td>
         <td>{{ appt.time }}</td>
         <td>{{ appt.get_status_display }}</td>
         <td>
           {% if appt.status == 'pending' %}
-          <a href="{% url 'dashboard:accept_appointment' appt.id %}" class="btn btn-success btn-sm">Accepter</a>
-          <a href="{% url 'dashboard:refuse_appointment' appt.id %}" class="btn btn-danger btn-sm">Refuser</a>
+            <a href="{% url 'dashboard:accept_appointment' appt.id %}" class="btn btn-success btn-sm">Accepter</a>
+            <a href="{% url 'dashboard:refuse_appointment' appt.id %}" class="btn btn-danger btn-sm">Refuser</a>
           {% endif %}
         </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">Aucun rendez-vous pour le moment.</td>
       </tr>
       {% endfor %}
     </tbody>
