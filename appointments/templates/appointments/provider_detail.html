@@ -1,241 +1,217 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block content %}
 
+<!-- ====== Styles ====== -->
 <style>
-body {
-    background: #f0f2f5;
-    font-family: 'Poppins', sans-serif;
-    color: #333;
-    margin: 0;
-    padding: 0;
-}
-
-/* --- CONTAINER --- */
+/* Container prestataire */
 .provider-card {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 50px auto;
-    background: #ffffff;
+    background: #fff;
     border-radius: 20px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.1);
     overflow: hidden;
-    padding: 35px;
+    padding: 30px;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-/* --- HEADER --- */
+/* Header profil */
 .provider-header {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
 }
-.provider-header img {
+
+.photo-wrapper {
     width: 130px;
     height: 130px;
     border-radius: 50%;
     border: 4px solid #6c5ce7;
-    object-fit: cover;
-    margin-bottom: 15px;
-}
-.provider-header h2 {
-    font-size: 2rem;
-    margin-bottom: 5px;
-}
-.provider-header p {
-    font-size: 1rem;
-    color: #666;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
-/* --- SERVICES --- */
-.provider-services {
-    text-align: center;
-    margin-top: 25px;
-}
-.provider-services h3 {
-    font-size: 1.3rem;
-    margin-bottom: 10px;
-    color: #444;
-}
-.service-badge {
-    display: inline-block;
-    background: #6c5ce7;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 20px;
-    margin: 4px 4px 4px 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-/* --- BOUTON RÉSERVATION --- */
-.provider-book {
-    text-align: center;
-    margin-top: 30px;
-}
-.provider-book .btn-book {
-    background: #00b894;
-    color: #fff;
-    font-weight: 600;
-    padding: 12px 30px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-size: 1rem;
-    transition: 0.3s;
-}
-.provider-book .btn-book:hover {
-    background: #00a07f;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-/* --- GALERIE --- */
-.provider-gallery {
-    margin-top: 40px;
-}
-.provider-gallery h3 {
-    font-size: 1.3rem;
-    margin-bottom: 15px;
-}
-.gallery-filters {
-    text-align: center;
-    margin-bottom: 15px;
-}
-.filter-btn {
-    border: none;
-    background: #e0e0e0;
-    padding: 7px 18px;
-    border-radius: 25px;
-    cursor: pointer;
-    margin-right: 5px;
-    font-size: 0.85rem;
-    transition: 0.2s;
-}
-.filter-btn.active {
-    background: #6c5ce7;
-    color: #fff;
-}
-.gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-}
-.gallery img {
+.photo-wrapper img {
     width: 100%;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-.gallery img:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s;
 }
 
-/* --- AVIS --- */
-.provider-reviews {
-    margin-top: 40px;
+.photo-wrapper img:hover {
+    transform: scale(1.05);
 }
-.provider-reviews h3 {
-    font-size: 1.3rem;
-    margin-bottom: 15px;
+
+.provider-header h2 {
+    margin: 0;
+    font-size: 28px;
+    color: #2d3436;
 }
-.review-card {
+
+.provider-header h3 {
+    margin: 5px 0 0 0;
+    font-weight: 400;
+    color: #636e72;
+}
+
+/* Détails prestataire */
+.provider-details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.provider-details p {
+    margin: 0;
+    font-size: 16px;
+    color: #2d3436;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Carousel / Galerie */
+.provider-gallery {
+    margin-top: 20px;
+}
+
+.swiper {
+    padding: 15px 0;
+}
+
+.swiper-slide {
     background: #f8f9fb;
-    padding: 15px 20px;
     border-radius: 15px;
-    margin-bottom: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-.review-card .stars {
-    color: #f1c40f;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
+
+.swiper-slide img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: transform 0.3s;
 }
-.review-card p {
-    font-size: 0.9rem;
-    color: #555;
-    margin: 2px 0;
+
+.swiper-slide img:hover {
+    transform: scale(1.05);
+}
+
+.swiper-slide h4 {
+    margin: 5px 0 3px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3436;
+}
+
+.swiper-slide p {
+    font-size: 13px;
+    color: #636e72;
+    margin: 0;
+}
+
+.swiper-slide .price {
+    font-weight: 600;
+    color: #6c5ce7;
+    margin-top: 5px;
 }
 </style>
 
+<!-- ====== HTML ====== -->
 <div class="provider-card">
 
     <!-- Header -->
     <header class="provider-header">
-        {% if provider.photo %}
-            <img src="{{ provider.photo.url }}" alt="{{ provider.user.username }}">
-        {% else %}
-            <img src="/static/default_profile.png" alt="{{ provider.user.username }}">
-        {% endif %}
-        <h2>{{ provider.user.username }}</h2>
-        <p><strong>Téléphone:</strong> {{ provider.phone }}</p>
+        <div class="photo-wrapper">
+            {% if provider.photo %}
+                <img src="{{ provider.photo.url }}" alt="{{ provider.user.username }}">
+            {% else %}
+                <img src="{% static 'default_avatar.png' %}" alt="Avatar">
+            {% endif %}
+        </div>
+        <div>
+            <h2>{{ provider.user.first_name }} {{ provider.user.last_name }}</h2>
+            {% if provider.service %}
+                <h3>{{ provider.service.name }}</h3>
+            {% endif %}
+        </div>
     </header>
 
-    <!-- Services -->
-    <section class="provider-services">
-        <h3>Services proposés:</h3>
-        {% if provider.services.exists %}
-            <p>
-                {% for s in provider.services.all %}
-                    <span class="service-badge">{{ s.name }}</span>
-                {% endfor %}
-            </p>
-        {% else %}
-            <p>Aucun service disponible</p>
+    <!-- Détails -->
+    <div class="provider-details">
+        {% if provider.city %}
+            <p>📍 Ville: {{ provider.city }}</p>
         {% endif %}
-    </section>
-
-    <!-- Bouton Réserver -->
-    <div class="provider-book">
-        <a href="{% url 'appointments:book_appointment' provider.id %}" class="btn-book">📅 Réserver</a>
+        {% if provider.address %}
+            <p>🏠 Adresse: {{ provider.address }}</p>
+        {% endif %}
+        {% if provider.phone %}
+            <p>📞 Téléphone: {{ provider.phone }}</p>
+        {% endif %}
+        {% if provider.category %}
+            <p>📂 Catégorie: {{ provider.category.name }}</p>
+        {% endif %}
     </div>
 
-    <!-- Galerie -->
-    {% if provider.gallery.exists %}
+    <!-- Galerie / Portfolio -->
+    {% if provider.portfolio.exists %}
     <section class="provider-gallery">
         <h3>🖼️ Galerie</h3>
-        <div class="gallery-filters">
-            <button class="filter-btn active" data-filter="all">Tous</button>
-            <button class="filter-btn" data-filter="travail">Travail</button>
-            <button class="filter-btn" data-filter="clients">Clients</button>
-        </div>
-        <div class="gallery">
-            {% for photo in provider.gallery.all %}
-                <img src="{{ photo.image.url }}" alt="Photo {{ forloop.counter }}" data-type="{{ photo.type }}">
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
+        <div class="swiper">
+            <div class="swiper-wrapper">
+                {% for item in provider.portfolio.all %}
+                <div class="swiper-slide">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title|default:'Travail' }}">
+                    {% else %}
+                        <img src="{% static 'default_image.png' %}" alt="Image manquante">
+                    {% endif %}
+                    <h4>{{ item.title|default:"Sans titre" }}</h4>
+                    <p>{{ item.description|default:"Pas de description" }}</p>
+                    <p class="price">Prix: {{ item.price|default:"-" }} €</p>
+                </div>
+                {% endfor %}
+            </div>
 
-    <!-- Avis -->
-    {% if provider.reviews.exists %}
-    <section class="provider-reviews">
-        <h3>⭐ Avis clients</h3>
-        <div class="reviews-list">
-            {% for r in provider.reviews.all %}
-                <article class="review-card">
-                    <p class="stars">{% for i in "12345"|slice:":r.rating" %}⭐{% endfor %}</p>
-                    <p>{{ r.comment }}</p>
-                    <p><strong>{{ r.user.username }}</strong></p>
-                </article>
-            {% endfor %}
+            <!-- Flèches -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
         </div>
     </section>
+    {% else %}
+        <p style="text-align:center; margin-top:20px; color:#555;">Aucun travail publié pour ce prestataire.</p>
     {% endif %}
 
 </div>
 
+<!-- ====== Swiper JS ====== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 <script>
-// Filtrer galerie
-const filterBtns = document.querySelectorAll('.filter-btn');
-const galleryImgs = document.querySelectorAll('.gallery img');
-
-filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const filter = btn.getAttribute('data-filter');
-
-        galleryImgs.forEach(img => {
-            img.style.display = (filter === 'all' || img.getAttribute('data-type') === filter) ? 'block' : 'none';
-        });
-    });
+const swiper = new Swiper('.swiper', {
+    slidesPerView: 3,
+    spaceBetween: 20,
+    navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+    },
+    breakpoints: {
+        640: { slidesPerView: 1 },
+        768: { slidesPerView: 2 },
+        1024: { slidesPerView: 3 },
+    }
 });
 </script>
 

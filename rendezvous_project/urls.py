@@ -22,6 +22,7 @@ from rendezvous_project import settings
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
      path("", views.acceuil, name="acceuil"),  # Page d'accueil
     

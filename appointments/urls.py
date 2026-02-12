@@ -48,5 +48,11 @@ path('ajax/get_services/', views.ajax_get_services, name='ajax_get_services'),
 path("provider/dashboard/", views.provider_dashboard, name="provider_dashboard"),
   path("notifications/", views.notifications_page, name="notifications_page"),
      path('ajax/unread-count/', views.ajax_unread_count, name='ajax_unread_count'),
+       path('ajax/portfolio/save/', views.ajax_save_portfolio, name='ajax_save_portfolio'),
+      path('provider/<int:provider_id>/agenda/', views.provider_agenda, name='provider_agenda'),
+    path('provider/<int:provider_id>/agenda/events/', views.provider_agenda_events, name='provider_agenda_events'),
+    path('provider/agenda/book/', views.book_appointment_ajax, name='book_appointment_ajax'),
+        path('ajax/save-availability/', views.ajax_save_availability, name='ajax_save_availability'),
+
 
 ]

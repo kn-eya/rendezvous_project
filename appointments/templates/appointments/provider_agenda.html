@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<!-- Axios pour les requêtes AJAX -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<style>
+    #calendar {
+        max-width: 900px;
+        margin: 40px auto;
+    }
+</style>
+
+<div id="calendar"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const providerId = '{{ provider.id }}';
+    const SLOT_DURATION = 60; // durée en minutes
+
+    if (typeof FullCalendar === 'undefined') {
+        console.error("FullCalendar n'est pas chargé !");
+        return;
+    }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        nowIndicator: true,
+        allDaySlot: false,
+        slotMinTime: "08:00:00",
+        slotMaxTime: "20:00:00",
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'timeGridWeek,timeGridDay' 
+        },
+        events: `/appointments/provider/${providerId}/agenda/events/`,
+
+        eventClick: function(info) {
+            const booked = info.event.extendedProps.booked;
+
+            if (booked) {
+                alert('Ce créneau est déjà réservé.');
+                return;
+            }
+
+            if (confirm(`Voulez-vous réserver ce créneau le ${info.event.start.toLocaleString()} ?`)) {
+                axios.post("{% url 'appointments:book_appointment_ajax' %}", 
+                    new URLSearchParams({
+                        provider_id: providerId,
+                        start: info.event.start.toISOString()
+                    })
+                ).then(res => {
+                    if (res.data.status === 'success') {
+                        alert('Rendez-vous réservé ✅');
+                        calendar.refetchEvents(); // recharge les événements
+                    } else {
+                        alert(res.data.message || 'Erreur lors de la réservation.');
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    alert('Erreur lors de la réservation.');
+                });
+            }
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+{% endblock %}

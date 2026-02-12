@@ -45,10 +45,10 @@ class AvailabilityAdmin(admin.ModelAdmin):
 # -------------------------
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    list_display = ('client', 'provider', 'category', 'date', 'time', 'status')
+    list_display = ('client', 'provider', 'category', 'date', 'start_time', 'status')
     list_filter = ('status', 'date', 'provider__service')
     search_fields = ('client__username', 'provider__user__username', 'category__name')
-    ordering = ('date', 'time')
+    ordering = ('date', 'start_time')
 
 # -------------------------
 # Admin pour Notification

@@ -1,165 +1,317 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-.profile-container {
-    max-width: 900px;
-    margin: 40px auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-.profile-container h2 { text-align:center; margin-bottom:25px; font-size:28px; font-weight:600; }
-.form-group { margin-bottom: 15px; }
-label { font-weight: 500; }
-input.form-control, select.form-control, textarea.form-control {
-    width:100%; padding:8px 12px; border-radius:12px; border:1px solid #ccc;
-}
-button.btn-save {
-    background: linear-gradient(135deg,#6c5ce7,#00b894); color:#fff; border:none;
-    padding:10px 25px; border-radius:25px; font-weight:500; cursor:pointer; transition:0.3s;
-}
-button.btn-save:hover { transform: scale(1.05); }
+    :root { --primary: #6c5ce7; --secondary: #00b894; --bg: #f4f7fe; }
+    body { background-color: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; color: #2d3436; }
+    
+    .profile-card {
+        max-width: 1150px; margin: 30px auto; background: white;
+        border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+        display: flex; min-height: 700px; overflow: hidden;
+    }
 
-.availability-card {
-    background:#f9f9f9; padding:15px; border-radius:15px; margin-bottom:10px;
-    display:flex; gap:15px; align-items:center;
-}
-.availability-card input, .availability-card select { flex:1; }
-.delete-btn {
-    background:#e74c3c; border:none; color:#fff; padding:5px 10px; border-radius:12px; cursor:pointer;
-}
-.add-btn {
-    background:#0984e3; border:none; color:#fff; padding:8px 15px; border-radius:12px; cursor:pointer;
-    margin-bottom: 15px;
-}
+    /* Sidebar Navigation */
+    .profile-sidebar {
+        width: 280px; background: #ffffff; border-right: 1px solid #f1f3f9;
+        padding: 40px 20px; display: flex; flex-direction: column;
+    }
+    .nav-pills .nav-link {
+        color: #636e72; font-weight: 600; padding: 12px 15px; border-radius: 12px; margin-bottom: 5px; text-align: left; transition: 0.3s;
+    }
+    .nav-pills .nav-link.active { background: rgba(108, 92, 231, 0.1); color: var(--primary); }
+
+    /* Forms & Info Grid */
+    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .info-item { background: #f8faff; padding: 15px; border-radius: 15px; border: 1px solid #edf2f7; }
+    .info-item label { display: block; font-size: 0.75rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; margin-bottom: 5px; }
+    .info-item input, .info-item select, .info-item textarea { 
+        background: transparent !important; border: none !important; padding: 0 !important; 
+        font-weight: 600; color: #2d3436; width: 100%; outline: none;
+    }
+
+    /* Portfolio Cards */
+    .gallery-card {
+        border: none; border-radius: 18px; overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s;
+    }
+    .gallery-card:hover { transform: translateY(-5px); }
+    .gallery-img { height: 160px; object-fit: cover; width: 100%; }
+
+    /* Buttons */
+    .btn-primary { background: var(--primary); border: none; }
+    .btn-save-main { 
+        background: linear-gradient(135deg, var(--primary), #8e44ad); 
+        border: none; padding: 14px; border-radius: 12px; font-weight: 700; color: white;
+    }
+    .status-badge { padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; background: #eef2ff; color: var(--primary); }
 </style>
 
-<div class="profile-container">
-    <h2>🛠️ Modifier mon profil prestataire</h2>
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        <!-- Service et Catégorie -->
-        <div class="form-group">
-            <label for="id_service">Service général</label>
-            {{ provider_form.service }}
-        </div>
-        <div class="form-group">
-            <label for="id_category">Catégorie</label>
-            {{ provider_form.category }}
-        </div>
-
-        <!-- Infos prestataire -->
-        <div class="form-group">
-            <label for="id_phone">Téléphone</label>
-            {{ provider_form.phone }}
-        </div>
-        <div class="form-group">
-            <label for="id_city">Ville</label>
-            {{ provider_form.city }}
-        </div>
-        <div class="form-group">
-            <label for="id_address">Adresse</label>
-            {{ provider_form.address }}
-        </div>
-        <div class="form-group">
-            <label for="id_photo">Photo</label>
-            {{ provider_form.photo }}
-        </div>
-
-        <!-- Disponibilités -->
-        <h3>🗓️ Mes disponibilités</h3>
-        <button type="button" class="add-btn" id="add-availability">➕ Ajouter une disponibilité</button>
-        <div id="availability-list">
-            {% for form in availability_formset %}
-            <div class="availability-card">
-                {{ form.day_of_week }} {{ form.start_time }} {{ form.end_time }}
-                {% if form.instance.pk %}
-                    <input type="checkbox" name="{{ form.prefix }}-DELETE"> Supprimer
-                {% endif %}
+<div class="container">
+    <div class="profile-card">
+        <div class="profile-sidebar">
+            <div class="text-center mb-4">
+                <div class="position-relative d-inline-block" onclick="document.getElementById('id_photo').click();">
+                    <img id="photo-preview" 
+                         src="{% if provider_form.instance.photo %}{{ provider_form.instance.photo.url }}{% else %}{% static 'default_avatar.png' %}{% endif %}" 
+                         style="width: 110px; height: 110px; border-radius: 35px; object-fit: cover; cursor: pointer; border: 4px solid var(--primary);">
+                    <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-1" style="cursor:pointer">📸</div>
+                </div>
+                <h6 class="mt-3 mb-0 fw-bold">{{ request.user.username }}</h6>
+                <small class="text-muted">Profil Professionnel</small>
             </div>
-            {% endfor %}
+
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-general" type="button">🏠 Infos Générales</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-hours" type="button">⏰ Horaires</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-gallery" type="button">🖼️ Portfolio</button>
+            </div>
+
+            <button type="submit" form="mainProfileForm" class="btn-save-main mt-auto">Enregistrer Profil</button>
         </div>
 
-        <button type="submit" class="btn-save mt-3">💾 Enregistrer</button>
-    </form>
+        <div class="profile-content p-5 w-100">
+            <form method="POST" enctype="multipart/form-data" id="mainProfileForm">
+                {% csrf_token %}
+                <div style="display:none">{{ provider_form.photo }}</div>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tab-general">
+                        <h5 class="fw-bold mb-4">Informations de contact</h5>
+                        <div class="info-grid">
+                            <div class="info-item"><label>Service</label>{{ provider_form.service }}</div>
+                            <div class="info-item"><label>Catégorie</label>{{ provider_form.category }}</div>
+                            <div class="info-item"><label>Téléphone</label>{{ provider_form.phone }}</div>
+                            <div class="info-item"><label>Ville</label>{{ provider_form.city }}</div>
+                            <div class="info-item" style="grid-column: span 2;"><label>Adresse exacte</label>{{ provider_form.address }}</div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-hours">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold m-0">Disponibilités</h5>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#availabilityModal"> + Ajouter</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle">
+                                <thead class="text-muted small">
+                                    <tr><th>JOUR</th><th>OUVERTURE</th><th>PAUSE</th><th>ACTIONS</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for avail in availability_formset %}
+                                    {% if avail.instance.id %}
+                                    <tr class="border-bottom">
+                                        <td class="fw-bold">{{ avail.instance.get_day_of_week_display }}</td>
+                                        <td><span class="status-badge">{{ avail.instance.start_time|time:"H:i" }} - {{ avail.instance.end_time|time:"H:i" }}</span></td>
+                                        <td class="text-muted small">
+                                            {% if avail.instance.break_start %}{{ avail.instance.break_start|time:"H:i" }} - {{ avail.instance.break_end|time:"H:i" }}{% else %}-{% endif %}
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm edit-availability-btn" 
+                                                data-id="{{ avail.instance.id }}" data-day="{{ avail.instance.day_of_week }}"
+                                                data-start="{{ avail.instance.start_time|time:'H:i' }}" data-end="{{ avail.instance.end_time|time:'H:i' }}"
+                                                data-break-start="{{ avail.instance.break_start|time:'H:i'|default:'' }}" 
+                                                data-break-end="{{ avail.instance.break_end|time:'H:i'|default:'' }}">✏️</button>
+                                            <button type="button" class="btn btn-sm text-danger delete-availability-btn" data-id="{{ avail.instance.id }}">🗑️</button>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-gallery">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold m-0">Galerie de Prestations</h5>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#portfolioModal"> + Nouvelle Image</button>
+                        </div>
+                        <div class="row g-3">
+                            {% for item in provider_form.instance.portfolio.all %}
+                            <div class="col-md-4">
+                                <div class="card gallery-card">
+                                    <img src="{{ item.image.url }}" class="gallery-img">
+                                    <div class="p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%">{{ item.title }}</h6>
+                                            <span class="badge bg-soft-success text-dark">{{ item.price }}€</span>
+                                        </div>
+                                        <p class="text-muted small mb-2 text-truncate">{{ item.description }}</p>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary w-100 edit-portfolio-btn"
+                                                data-id="{{ item.id }}" data-title="{{ item.title }}"
+                                                data-desc="{{ item.description }}" data-price="{{ item.price }}"
+                                                data-img="{{ item.image.url }}">Modifier</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-portfolio-btn" data-id="{{ item.id }}">🗑️</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
+<div class="modal fade" id="portfolioModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="portfolioForm" class="modal-content border-0 shadow-lg">
+            {% csrf_token %}
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Prestation Portfolio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" name="portfolio_id" id="portfolioId">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Image</label>
+                    <input type="file" name="image" id="portfolioImage" class="form-control rounded-3">
+                    <img id="previewPortfolio" class="img-fluid rounded-3 mt-2 d-none" style="max-height: 150px; width: 100%; object-fit: cover;">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Titre</label>
+                    <input type="text" name="title" id="portfolioTitle" class="form-control rounded-3" placeholder="Ex: Coupe Homme Dégradé">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Description</label>
+                    <textarea name="description" id="portfolioDescription" class="form-control rounded-3" rows="2" placeholder="Détails de la prestation..."></textarea>
+                </div>
+                
+                <div class="mb-0">
+                    <label class="form-label fw-bold small">Prix de base (€)</label>
+                    <input type="number" step="0.01" name="price" id="portfolioPrice" class="form-control rounded-3">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4">Sauvegarder</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="availabilityModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <form id="availabilityForm" class="modal-content border-0 shadow">
+            {% csrf_token %}
+            <div class="modal-body p-4">
+                <h6 class="fw-bold mb-3">Horaires de travail</h6>
+                <input type="hidden" name="availability_id" id="availabilityId">
+                <select name="day_of_week" id="availabilityDay" class="form-select mb-3">
+                    <option value="Mon">Lundi</option><option value="Tue">Mardi</option><option value="Wed">Mercredi</option>
+                    <option value="Thu">Jeudi</option><option value="Fri">Vendredi</option><option value="Sat">Samedi</option><option value="Sun">Dimanche</option>
+                </select>
+                <div class="row mb-3">
+                    <div class="col-6"><label class="small fw-bold">Début</label><input type="time" name="start_time" id="availabilityStart" class="form-control"></div>
+                    <div class="col-6"><label class="small fw-bold">Fin</label><input type="time" name="end_time" id="availabilityEnd" class="form-control"></div>
+                </div>
+                <div class="row">
+                    <div class="col-6"><label class="small text-muted">Pause Début</label><input type="time" name="break_start" id="availabilityBreakStart" class="form-control"></div>
+                    <div class="col-6"><label class="small text-muted">Pause Fin</label><input type="time" name="break_end" id="availabilityBreakEnd" class="form-control"></div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-4 rounded-3 py-2 fw-bold">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ===========================
-// Filtrage catégorie selon service
-// ===========================
-const serviceSelect = document.getElementById("id_service");
-const categorySelect = document.getElementById("id_category");
+    // --- GESTION DES ONGLETS (Mémorisation) ---
+    document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', (e) => localStorage.setItem('activeTab', e.target.getAttribute('data-bs-target')));
+    });
+    window.onload = () => {
+        const activeTab = localStorage.getItem('activeTab');
+        if (activeTab) {
+            const btn = document.querySelector(`button[data-bs-target="${activeTab}"]`);
+            if (btn) bootstrap.Tab.getOrCreateInstance(btn).show();
+        }
+    };
 
-function loadCategories(serviceId, selectedCategoryId=null){
-    fetch(`/appointments/ajax/get_categories/?service_id=${serviceId}`)
-    .then(res=>res.json())
-    .then(data=>{
-        categorySelect.innerHTML = "";
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "-- Choisir une catégorie --";
-        categorySelect.appendChild(defaultOption);
+    // --- PREVIEW PHOTO PROFIL ---
+    document.getElementById("id_photo")?.addEventListener("change", e => {
+        const reader = new FileReader();
+        reader.onload = ev => document.getElementById("photo-preview").src = ev.target.result;
+        reader.readAsDataURL(e.target.files[0]);
+    });
 
-        data.forEach(c=>{
-            const option = document.createElement("option");
-            option.value = c.id;
-            option.textContent = c.name;
-            if(selectedCategoryId && c.id == selectedCategoryId){
-                option.selected = true;
-            }
-            categorySelect.appendChild(option);
+    // --- PREVIEW IMAGE PORTFOLIO ---
+    document.getElementById('portfolioImage').addEventListener('change', e => {
+        const reader = new FileReader();
+        const preview = document.getElementById('previewPortfolio');
+        reader.onload = ev => { preview.src = ev.target.result; preview.classList.remove('d-none'); }
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // --- LOGIQUE AJAX PORTFOLIO ---
+    document.getElementById('portfolioForm').onsubmit = e => {
+        e.preventDefault();
+        fetch("{% url 'appointments:ajax_save_portfolio' %}", {
+            method:'POST', body:new FormData(e.target), headers:{'X-CSRFToken':'{{ csrf_token }}'}
+        }).then(() => location.reload());
+    };
+
+    // --- LOGIQUE AJAX DISPOS ---
+    document.getElementById('availabilityForm').onsubmit = e => {
+        e.preventDefault();
+        fetch("{% url 'appointments:ajax_save_availability' %}", {
+            method:'POST', body:new FormData(e.target), headers:{'X-CSRFToken':'{{ csrf_token }}'}
+        }).then(r => r.json()).then(data => {
+            if(data.status === 'success') location.reload();
+            else alert("Veuillez vérifier les horaires (la fin doit être après le début)");
         });
+    };
+
+    // --- EDITIONS ---
+    document.addEventListener('click', e => {
+        // Edit Portfolio
+        const editPort = e.target.closest('.edit-portfolio-btn');
+        if(editPort) {
+            const d = editPort.dataset;
+            document.getElementById('portfolioId').value = d.id;
+            document.getElementById('portfolioTitle').value = d.title;
+            document.getElementById('portfolioDescription').value = d.desc;
+            document.getElementById('portfolioPrice').value = d.price;
+            const preview = document.getElementById('previewPortfolio');
+            preview.src = d.img; preview.classList.remove('d-none');
+            new bootstrap.Modal(document.getElementById('portfolioModal')).show();
+        }
+
+        // Edit Availability
+        const editAvail = e.target.closest('.edit-availability-btn');
+        if(editAvail){
+            const d = editAvail.dataset;
+            document.getElementById('availabilityId').value = d.id;
+            document.getElementById('availabilityDay').value = d.day;
+            document.getElementById('availabilityStart').value = d.start;
+            document.getElementById('availabilityEnd').value = d.end;
+            document.getElementById('availabilityBreakStart').value = d.breakStart;
+            document.getElementById('availabilityBreakEnd').value = d.breakEnd;
+            new bootstrap.Modal(document.getElementById('availabilityModal')).show();
+        }
+
+        // Suppressions
+        const delPort = e.target.closest('.delete-portfolio-btn');
+        if(delPort && confirm("Supprimer cette image ?")) {
+            fetch(`/ajax/portfolio/delete/${delPort.dataset.id}/`, { method:'POST', headers:{'X-CSRFToken':'{{ csrf_token }}'} }).then(()=>location.reload());
+        }
+
+        const delAvail = e.target.closest('.delete-availability-btn');
+        if(delAvail && confirm("Supprimer cet horaire ?")) {
+            fetch(`/ajax/availability/delete/${delAvail.dataset.id}/`, { method:'POST', headers:{'X-CSRFToken':'{{ csrf_token }}'} }).then(()=>location.reload());
+        }
     });
-}
-
-if(serviceSelect.value){
-    loadCategories(serviceSelect.value, "{{ provider_form.instance.category.id|default:'' }}");
-}
-
-serviceSelect.addEventListener("change", function(){
-    const serviceId = this.value;
-    if(serviceId){
-        loadCategories(serviceId);
-    } else {
-        categorySelect.innerHTML = "<option value=''>-- Choisir une catégorie --</option>";
-    }
-});
-
-// ===========================
-// Ajouter / Supprimer disponibilités dynamiquement
-// ===========================
-const addBtn = document.getElementById("add-availability");
-const availabilityList = document.getElementById("availability-list");
-
-addBtn.addEventListener("click", function(){
-    const card = document.createElement("div");
-    card.classList.add("availability-card");
-    card.innerHTML = `
-        <select name="day_of_week" class="form-control" required>
-            <option value="">-- Jour --</option>
-            <option value="Mon">Lundi</option>
-            <option value="Tue">Mardi</option>
-            <option value="Wed">Mercredi</option>
-            <option value="Thu">Jeudi</option>
-            <option value="Fri">Vendredi</option>
-            <option value="Sat">Samedi</option>
-            <option value="Sun">Dimanche</option>
-        </select>
-        <input type="time" name="start_time" class="form-control" required>
-        <input type="time" name="end_time" class="form-control" required>
-        <button type="button" class="delete-btn">🗑️</button>
-    `;
-    availabilityList.appendChild(card);
-
-    // Supprimer la disponibilité
-    card.querySelector(".delete-btn").addEventListener("click", function(){
-        card.remove();
-    });
-});
 </script>
-
 {% endblock %}
