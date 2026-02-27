@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Service, Category, Provider, Availability, Appointment, Notification
+from .models import (
+    Appointment,
+    Availability,
+    BlockedSlot,
+    Category,
+    Notification,
+    Provider,
+    Service,
+)
 
 # -------------------------
 # Admin pour Service
@@ -39,6 +47,16 @@ class AvailabilityAdmin(admin.ModelAdmin):
     list_display = ('provider', 'day_of_week', 'start_time', 'end_time')
     list_filter = ('day_of_week', 'provider__service')
     search_fields = ('provider__user__username',)
+
+
+# -------------------------
+# Admin pour BlockedSlot
+# -------------------------
+@admin.register(BlockedSlot)
+class BlockedSlotAdmin(admin.ModelAdmin):
+    list_display = ("provider", "date", "start_time", "end_time", "reason")
+    list_filter = ("date", "provider__service")
+    search_fields = ("provider__user__username", "reason")
 
 # -------------------------
 # Admin pour Appointment

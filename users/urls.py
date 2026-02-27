@@ -10,6 +10,7 @@ urlpatterns = [
 
     path('redirect-after-login/', views.redirect_after_login, name='redirect_after_login'),
     path('social-login-redirect/', views.social_login_redirect, name='social_redirect'),
+    path('resend-confirmation/', views.resend_confirmation, name='resend_confirmation'),
 
 ]
 

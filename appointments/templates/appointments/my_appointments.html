@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container py-5">
-    <h2 class="text-center text-white mb-4">📅 Mes Rendez-vous</h2>
+    <h2 class="text-center text-white mb-4">Mes rendez-vous</h2>
 
     {% if appointments %}
         <div class="row g-4">
@@ -11,44 +11,58 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card appointment-card shadow-lg h-100">
                         <div class="card-body">
-
-                            <!-- Info prestataire -->
                             <div class="d-flex align-items-center mb-3">
-                                <img src="{% static 'images/default-avatar.png' %}" class="rounded-circle me-3" width="60" height="60" alt="Prestataire">
+                                <img
+                                    src="{% static 'images/default-avatar.png' %}"
+                                    class="rounded-circle me-3"
+                                    width="60"
+                                    height="60"
+                                    alt="Prestataire"
+                                >
                                 <div>
                                     <h5 class="mb-0">
                                         {% if appointment.provider %}
-                                            {{ appointment.provider.username }}
+                                            {{ appointment.provider.user.username }}
                                         {% else %}
                                             Aucun prestataire
                                         {% endif %}
                                     </h5>
-                                    <div class="rating">⭐⭐⭐⭐☆</div>
+                                    <small class="text-muted">
+                                        {% if appointment.category %}
+                                            {{ appointment.category.name }}
+                                        {% endif %}
+                                    </small>
                                 </div>
                             </div>
 
-                            <!-- Date / Heure / Statut -->
-                            <p><strong>Date :</strong> {{ appointment.date|date:"d M Y" }}</p>
-                            <p><strong>Heure :</strong> 
+                            <p><strong>Date :</strong> {{ appointment.date|date:"d/m/Y" }}</p>
+                            <p>
+                                <strong>Heure :</strong>
                                 {% if appointment.start_time and appointment.end_time %}
-                                    {{ appointment.start_time|date:"h:i A" }} - {{ appointment.end_time|date:"h:i A" }}
+                                    {{ appointment.start_time|time:"H:i" }} - {{ appointment.end_time|time:"H:i" }}
                                 {% elif appointment.start_time %}
-                                    {{ appointment.start_time|date:"h:i A" }}
+                                    {{ appointment.start_time|time:"H:i" }}
                                 {% else %}
-                                    Non défini
+                                    Non defini
                                 {% endif %}
                             </p>
-                            <p><strong>Statut :</strong>
-                                {% if appointment.status == 'pending' %}
-                                    <span class="badge bg-warning">En attente</span>
-                                {% elif appointment.status == 'confirmed' %}
-                                    <span class="badge bg-success">Confirmé</span>
+                            <p>
+                                <strong>Statut :</strong>
+                                {% if appointment.status == "pending" %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% elif appointment.status == "accepted" %}
+                                    <span class="badge bg-success">Accepte</span>
+                                {% elif appointment.status == "refused" %}
+                                    <span class="badge bg-danger">Refuse</span>
+                                {% elif appointment.status == "cancelled" %}
+                                    <span class="badge bg-secondary">Annule</span>
+                                {% elif appointment.status == "done" %}
+                                    <span class="badge bg-primary">Termine</span>
                                 {% else %}
-                                    <span class="badge bg-danger">Annulé</span>
+                                    <span class="badge bg-light text-dark">{{ appointment.get_status_display }}</span>
                                 {% endif %}
                             </p>
 
-                            <!-- Actions -->
                             <div class="d-flex justify-content-between mt-3">
                                 {% if appointment.provider %}
                                     <a href="{% url 'appointments:provider_detail' appointment.provider.id %}" class="btn btn-outline-primary btn-sm">
@@ -58,16 +72,15 @@
                                     <button class="btn btn-outline-secondary btn-sm" disabled>Pas de prestataire</button>
                                 {% endif %}
 
-                                {% if appointment.status != 'cancelled' %}
-                                <form method="post" action="{% url 'appointments:cancel_appointment' appointment.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Annuler ce rendez-vous ?');">
-                                        Annuler
-                                    </button>
-                                </form>
+                                {% if appointment.status == "pending" or appointment.status == "accepted" %}
+                                    <form method="post" action="{% url 'appointments:cancel_appointment' appointment.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Annuler ce rendez-vous ?');">
+                                            Annuler
+                                        </button>
+                                    </form>
                                 {% endif %}
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -75,14 +88,14 @@
         </div>
     {% else %}
         <div class="alert alert-warning text-center">
-            Aucun rendez-vous trouvé.
+            Aucun rendez-vous trouve.
         </div>
     {% endif %}
 </div>
 
 <style>
 body {
-    background: linear-gradient(135deg,#00b894,#6c5ce7);
+    background: linear-gradient(135deg, #00b894, #6c5ce7);
 }
 
 .appointment-card {
@@ -92,12 +105,7 @@ body {
 
 .appointment-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-}
-
-.rating {
-    color: #f1c40f;
-    font-size: 14px;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
 }
 
 .btn-outline-primary {

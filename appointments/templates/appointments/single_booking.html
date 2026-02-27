@@ -1,128 +1,502 @@
-{% extends "base.html" %}
-{% block title %}Réserver Rendez-vous{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Reserver Rendez-vous{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Réserver un rendez-vous pour {{ service.name }}</h2>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<style>
+    .single-booking-page .booking-card {
+        max-width: 880px;
+        border: 1px solid #dbe3ef;
+        border-radius: 18px;
+        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.07);
+    }
 
-    <form id="bookingForm" method="post" class="mt-4">
-        {% csrf_token %}
+    .single-booking-page .card-header {
+        border-top-left-radius: 18px;
+        border-top-right-radius: 18px;
+        background: linear-gradient(120deg, #0f766e, #0ea5e9);
+    }
 
-        <!-- Catégorie -->
-        <div class="mb-3">
-            <label for="category" class="form-label">Catégorie</label>
-            <select name="category" id="category" class="form-select" required>
-                <option value="">-- Sélectionner --</option>
-                {% for cat in categories %}
-                    <option value="{{ cat.id }}">{{ cat.name }} - {{ cat.price }} DT</option>
-                {% endfor %}
-            </select>
+    .selection-box {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        padding: 10px 12px;
+    }
+
+    .selection-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .selection-value {
+        margin: 0;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    #providerCalendar {
+        min-height: 68vh;
+    }
+
+    .legend-wrap {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+    }
+
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        background: #fff;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .dot-free { background: #16a34a; }
+    .dot-selected { background: #2563eb; }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .fc .fc-button {
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+    }
+</style>
+
+<div class="single-booking-page container py-4 py-lg-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card booking-card border-0">
+                <div class="card-header text-white py-3">
+                    <h2 class="text-center h4 mb-0">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Reserver un rendez-vous pour {{ service.name }}
+                    </h2>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <div id="message-container"></div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form id="bookingForm" method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="category" class="form-label fw-bold">
+                                <i class="bi bi-tag me-1"></i> Categorie <span class="text-danger">*</span>
+                            </label>
+                            <select name="category" id="category" class="form-select form-select-lg" required>
+                                <option value="">-- Selectionnez une categorie --</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }} - {{ cat.price }} DT</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="provider" class="form-label fw-bold">
+                                <i class="bi bi-person-badge me-1"></i> Prestataire <span class="text-danger">*</span>
+                            </label>
+                            <select name="provider" id="provider" class="form-select form-select-lg" required disabled>
+                                <option value="">-- Choisir d'abord une categorie --</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="selection-box h-100">
+                                    <p class="selection-label">Date selectionnee</p>
+                                    <p id="dateDisplay" class="selection-value">Aucune</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="selection-box h-100">
+                                    <p class="selection-label">Creneau selectionne</p>
+                                    <p id="timeDisplay" class="selection-value">Aucun</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="date" id="date-hidden" required>
+                        <input type="hidden" name="start_time" id="time-hidden" required>
+                        <input type="hidden" name="end_time" id="end-time-hidden">
+
+                        <div class="mb-4">
+                            <label for="notes" class="form-label fw-bold">
+                                <i class="bi bi-chat-text me-1"></i> Notes (optionnel)
+                            </label>
+                            <textarea name="notes" id="notes" rows="3" class="form-control" placeholder="Informations complementaires pour le prestataire..."></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary btn-lg" id="openCalendarBtn">
+                                <i class="bi bi-calendar-week me-1"></i> Choisir un creneau dans l agenda
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <!-- Prestataire -->
-        <div class="mb-3">
-            <label for="provider" class="form-label">Prestataire</label>
-            <select name="provider" id="provider" class="form-select" required>
-                <option value="">-- Sélectionner --</option>
-                {% for p in providers %}
-                    <option value="{{ p.id }}">{{ p.user.username }}{% if p.city %} ({{ p.city }}){% endif %}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Date et Heure -->
-        <div class="mb-3">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" name="date" id="date" class="form-control" >
-        </div>
-
-        <div class="mb-3">
-            <label for="start_time" class="form-label">Heure</label>
-            <input type="time" name="start_time" id="start_time" class="form-control" >
-        </div>
-
-        <div class="mb-3">
-            <label for="notes" class="form-label">Notes (optionnel)</label>
-            <textarea name="notes" rows="3" class="form-control"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-success">Réserver</button>
-    </form>
-</div>
-
-<!-- Modal calendrier -->
-<div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="calendarModalLabel">Agenda du prestataire</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-      </div>
-      <div class="modal-body">
-        <div id="providerCalendar" style="height: 80vh; min-height: 600px;"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-      </div>
     </div>
-  </div>
 </div>
 
-<!-- CSS & JS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="calendarModalLabel">
+                    <i class="bi bi-calendar-week me-1"></i>
+                    Agenda du prestataire - Cliquez sur un creneau libre pour reserver
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="legend-wrap mb-3">
+                    <span class="legend-item"><span class="legend-dot dot-free"></span>Libre (cliquez)</span>
+                    <span class="legend-item"><span class="legend-dot dot-selected"></span>Selection en cours</span>
+                </div>
+                <div id="providerCalendar"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    const bookingForm = document.getElementById("bookingForm");
     const providerSelect = document.getElementById("provider");
-    const calendarModal = new bootstrap.Modal(document.getElementById("calendarModal"));
-    const dateInput = document.getElementById("date");
-    const timeInput = document.getElementById("start_time");
-    let calendar;
+    const categorySelect = document.getElementById("category");
+    const dateDisplay = document.getElementById("dateDisplay");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const dateHidden = document.getElementById("date-hidden");
+    const timeHidden = document.getElementById("time-hidden");
+    const endTimeHidden = document.getElementById("end-time-hidden");
+    const notesInput = document.getElementById("notes");
+    const openCalendarBtn = document.getElementById("openCalendarBtn");
+    const messageContainer = document.getElementById("message-container");
+    const csrfToken = bookingForm.querySelector("input[name='csrfmiddlewaretoken']")?.value || "";
 
-    providerSelect.addEventListener("change", function() {
-        const providerId = this.value;
-        if (!providerId) return;
+    const providersEndpoint = "{% url 'appointments:get_providers' %}";
+    const slotsEndpoint = "{% url 'appointments:ajax_available_slots' %}";
+    const minDate = "{{ min_date }}";
+    const calendarModalEl = document.getElementById("calendarModal");
+    const calendarModal = (window.bootstrap && calendarModalEl)
+        ? new window.bootstrap.Modal(calendarModalEl)
+        : null;
 
-        calendarModal.show();
+    let calendar = null;
+    let isSubmitting = false;
 
-        const modalEl = document.getElementById("calendarModal");
+    const showMessage = (message, type = "success") => {
+        const alert = document.createElement("div");
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.role = "alert";
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        `;
+        messageContainer.appendChild(alert);
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.classList.remove("show");
+                setTimeout(() => alert.remove(), 200);
+            }
+        }, 5000);
+    };
 
-        modalEl.addEventListener('shown.bs.modal', function () {
-            if(calendar){
-                calendar.destroy();
+    const resetSelectedSlot = () => {
+        dateDisplay.textContent = "Aucune";
+        timeDisplay.textContent = "Aucun";
+        dateHidden.value = "";
+        timeHidden.value = "";
+        endTimeHidden.value = "";
+    };
+
+    const toHumanDate = (dateObj) => dateObj.toLocaleDateString("fr-FR", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+    });
+
+    const toHHmm = (dateObj) => {
+        const hh = String(dateObj.getHours()).padStart(2, "0");
+        const mm = String(dateObj.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+    };
+
+    const buildDateRange = (start, end) => {
+        const days = [];
+        const cursor = new Date(start);
+        cursor.setHours(0, 0, 0, 0);
+        const endCursor = new Date(end);
+        endCursor.setHours(0, 0, 0, 0);
+        while (cursor < endCursor) {
+            const iso = cursor.toISOString().slice(0, 10);
+            days.push(iso);
+            cursor.setDate(cursor.getDate() + 1);
+        }
+        return days;
+    };
+
+    const makeEvent = (dateStr, slotStr) => {
+        const start = new Date(`${dateStr}T${slotStr}:00`);
+        const end = new Date(start.getTime() + (60 * 60 * 1000));
+        return {
+            title: "Libre",
+            start: start.toISOString(),
+            end: end.toISOString(),
+            color: "#16a34a",
+            borderColor: "#15803d",
+            extendedProps: {
+                bookable: true,
+            },
+        };
+    };
+
+    const loadProviders = async () => {
+        const categoryId = categorySelect.value;
+        providerSelect.innerHTML = '<option value="">-- Choisir un prestataire --</option>';
+        providerSelect.disabled = true;
+        resetSelectedSlot();
+
+        if (!categoryId) {
+            providerSelect.innerHTML = '<option value="">-- Choisir d\'abord une categorie --</option>';
+            if (calendar) {
+                calendar.removeAllEvents();
+            }
+            return;
+        }
+
+        try {
+            const response = await fetch(`${providersEndpoint}?category_id=${encodeURIComponent(categoryId)}`);
+            const providers = await response.json();
+
+            if (!Array.isArray(providers) || providers.length === 0) {
+                providerSelect.innerHTML = '<option value="">Aucun prestataire disponible</option>';
+                return;
             }
 
-            const calendarEl = document.getElementById("providerCalendar");
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
-                locale: 'fr',
-                slotMinTime: "08:00:00",
-                slotMaxTime: "18:00:00",
-                allDaySlot: false,
-                height: '80vh',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'timeGridWeek,timeGridDay'
-                },
-                events: `/appointments/provider/${providerId}/agenda/events/`,
-                selectable: true,
-                select: function(info) {
-                    if(info.event.extendedProps.booked){
-                        alert("Ce créneau est déjà réservé !");
-                        return;
-                    }
-                    dateInput.value = info.startStr.split('T')[0];
-                    timeInput.value = info.startStr.split('T')[1].substring(0,5);
-                    calendarModal.hide();
-                }
+            providers.forEach((provider) => {
+                const cityText = provider.city ? ` (${provider.city})` : "";
+                providerSelect.insertAdjacentHTML(
+                    "beforeend",
+                    `<option value="${provider.id}">${provider.name}${cityText}</option>`,
+                );
             });
+            providerSelect.disabled = false;
 
-            calendar.render();
-        }, { once: true });
+            if (providers.length === 1) {
+                providerSelect.value = String(providers[0].id);
+            }
+
+            if (calendar) {
+                calendar.refetchEvents();
+            }
+        } catch (error) {
+            providerSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+        }
+    };
+
+    const bookAppointment = async (startDate, endDate) => {
+        if (isSubmitting) {
+            showMessage("Reservation en cours, veuillez patienter.", "info");
+            return;
+        }
+
+        if (!providerSelect.value || !categorySelect.value) {
+            showMessage("Selectionnez une categorie et un prestataire.", "warning");
+            return;
+        }
+
+        isSubmitting = true;
+        const dateStr = startDate.toISOString().slice(0, 10);
+        const startStr = toHHmm(startDate);
+        const endStr = toHHmm(endDate);
+
+        dateDisplay.textContent = toHumanDate(startDate);
+        timeDisplay.textContent = `${startStr} - ${endStr}`;
+        dateHidden.value = dateStr;
+        timeHidden.value = startStr;
+        endTimeHidden.value = endStr;
+
+        const payload = new URLSearchParams();
+        payload.append("provider", providerSelect.value);
+        payload.append("category", categorySelect.value);
+        payload.append("date", dateStr);
+        payload.append("start_time", startStr);
+        payload.append("end_time", endStr);
+        payload.append("notes", notesInput.value || "");
+        payload.append("csrfmiddlewaretoken", csrfToken);
+
+        try {
+            const response = await fetch(window.location.href, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": csrfToken,
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                },
+                body: payload.toString(),
+            });
+            const data = await response.json();
+
+            if (!response.ok || data.status !== "success") {
+                showMessage(data.message || "Reservation impossible.", "danger");
+                isSubmitting = false;
+                return;
+            }
+
+            showMessage(data.message || "Rendez-vous reserve avec succes.", "success");
+            calendarModal?.hide();
+            setTimeout(() => {
+                window.location.href = data.redirect_url || "{% url 'appointments:my_appointments' %}";
+            }, 1200);
+        } catch (error) {
+            showMessage("Erreur reseau pendant la reservation.", "danger");
+            isSubmitting = false;
+        }
+    };
+
+    const initCalendar = () => {
+        const calendarEl = document.getElementById("providerCalendar");
+        if (!calendarEl) {
+            return;
+        }
+
+        if (calendar) {
+            calendar.refetchEvents();
+            return;
+        }
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "timeGridWeek",
+            locale: "fr",
+            firstDay: 1,
+            slotMinTime: "07:00:00",
+            slotMaxTime: "22:00:00",
+            allDaySlot: false,
+            nowIndicator: true,
+            height: "70vh",
+            headerToolbar: {
+                left: "prev,next today",
+                center: "title",
+                right: "timeGridWeek,timeGridDay",
+            },
+            buttonText: {
+                today: "Aujourd'hui",
+                week: "Semaine",
+                day: "Jour",
+            },
+            validRange: {
+                start: minDate,
+            },
+            events: async (fetchInfo, successCallback, failureCallback) => {
+                const providerId = providerSelect.value;
+                if (!providerId) {
+                    successCallback([]);
+                    return;
+                }
+
+                try {
+                    const days = buildDateRange(fetchInfo.start, fetchInfo.end);
+                    const responses = await Promise.all(
+                        days.map(async (day) => {
+                            const res = await fetch(
+                                `${slotsEndpoint}?provider_id=${encodeURIComponent(providerId)}&date=${encodeURIComponent(day)}`,
+                            );
+                            const json = await res.json();
+                            return { day, slots: Array.isArray(json.slots) ? json.slots : [] };
+                        }),
+                    );
+
+                    const events = [];
+                    responses.forEach(({ day, slots }) => {
+                        slots.forEach((slot) => {
+                            events.push(makeEvent(day, slot));
+                        });
+                    });
+                    successCallback(events);
+                } catch (error) {
+                    failureCallback(error);
+                }
+            },
+            eventClick: (info) => {
+                if (!info.event.extendedProps.bookable) {
+                    return;
+                }
+                const start = info.event.start;
+                const end = info.event.end || new Date(start.getTime() + (60 * 60 * 1000));
+                bookAppointment(start, end);
+            },
+        });
+
+        calendar.render();
+    };
+
+    openCalendarBtn.addEventListener("click", () => {
+        if (!categorySelect.value) {
+            showMessage("Veuillez selectionner une categorie.", "warning");
+            categorySelect.focus();
+            return;
+        }
+
+        if (!providerSelect.value) {
+            showMessage("Veuillez selectionner un prestataire.", "warning");
+            providerSelect.focus();
+            return;
+        }
+
+        calendarModal?.show();
+        setTimeout(() => {
+            initCalendar();
+        }, 150);
+    });
+
+    categorySelect.addEventListener("change", loadProviders);
+    providerSelect.addEventListener("change", () => {
+        resetSelectedSlot();
+        if (calendar) {
+            calendar.refetchEvents();
+        }
+    });
+
+    bookingForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showMessage("Utilisez le bouton 'Choisir un creneau' pour reserver depuis l agenda.", "info");
     });
 });
 </script>

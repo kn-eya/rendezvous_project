@@ -1,38 +1,255 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
+
 {% block content %}
+<style>
+    .notif-page {
+        --np-line: #e2e8f0;
+        --np-muted: #64748b;
+        --np-text: #0f172a;
+        --np-brand: #0f766e;
+        --np-brand-soft: #e6f4f2;
+    }
 
-<h2 class="mb-4">🔔 Notifications</h2>
+    .notif-shell {
+        max-width: 980px;
+        margin: 0 auto;
+        display: grid;
+        gap: 12px;
+    }
 
-<!-- Bouton marquer toutes comme lues -->
-<form method="POST">
-    {% csrf_token %}
-    <button class="btn btn-primary mb-3" name="mark_all">Tout marquer comme lu</button>
-</form>
+    .notif-head {
+        border: 1px solid #c8e9e3;
+        border-radius: 18px;
+        background: linear-gradient(125deg, #ecfdf5 0%, #eef6ff 60%, #fff7ed 100%);
+        padding: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
 
-<div class="list-group">
-    {% for notif in notifications %}
-        <div class="list-group-item d-flex justify-content-between align-items-center 
-                    {% if not notif.is_read %}fw-bold{% endif %}">
+    .notif-title {
+        margin: 0;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--np-text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
+    .notif-sub {
+        margin: 4px 0 0;
+        color: var(--np-muted);
+        font-size: 0.9rem;
+    }
+
+    .notif-kpis {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .notif-kpi {
+        border: 1px solid #d8e1ef;
+        border-radius: 999px;
+        background: #fff;
+        padding: 5px 10px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .notif-tools {
+        border: 1px solid var(--np-line);
+        border-radius: 14px;
+        background: #fff;
+        padding: 10px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .tab-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .tab-chip {
+        text-decoration: none;
+        border: 1px solid var(--np-line);
+        border-radius: 999px;
+        padding: 5px 11px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #334155;
+        background: #fff;
+    }
+
+    .tab-chip.active {
+        border-color: #a4e4d8;
+        background: var(--np-brand-soft);
+        color: var(--np-brand);
+    }
+
+    .notif-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .notif-item {
+        border: 1px solid var(--np-line);
+        border-radius: 14px;
+        background: #fff;
+        padding: 12px 14px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .notif-item.unread {
+        border-color: #9adfd2;
+        background: #f8fffd;
+        box-shadow: inset 3px 0 0 #0f766e;
+    }
+
+    .notif-main {
+        min-width: 0;
+    }
+
+    .notif-main-title {
+        margin: 0;
+        font-size: 0.99rem;
+        font-weight: 800;
+        color: var(--np-text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notif-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #0f766e;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    .notif-message {
+        margin: 5px 0 7px;
+        color: #334155;
+        line-height: 1.45;
+        word-break: break-word;
+    }
+
+    .notif-meta {
+        margin: 0;
+        font-size: 0.79rem;
+        color: var(--np-muted);
+    }
+
+    .notif-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .empty-state {
+        border: 1px dashed #cbd5e1;
+        border-radius: 14px;
+        background: #f8fafc;
+        padding: 26px 14px;
+        text-align: center;
+        color: var(--np-muted);
+    }
+
+    @media (max-width: 767.98px) {
+        .notif-item {
+            grid-template-columns: 1fr;
+        }
+
+        .notif-actions {
+            justify-content: flex-start;
+        }
+    }
+</style>
+
+<div class="notif-page container py-3 py-lg-4">
+    <div class="notif-shell">
+        <section class="notif-head">
             <div>
-                <div><strong>{{ notif.title }}</strong></div>
-                <small>{{ notif.message }}</small><br>
-                <small class="text-muted">{{ notif.created_at }}</small>
+                <h1 class="notif-title"><i class="bi bi-bell"></i>Notifications</h1>
+                <p class="notif-sub">Suivi de tes activites et des rendez-vous.</p>
+            </div>
+            <div class="notif-kpis">
+                <span class="notif-kpi">Total: {{ total_count }}</span>
+                <span class="notif-kpi">Non lues: {{ unread_count }}</span>
+            </div>
+        </section>
+
+        <section class="notif-tools">
+            <div class="tab-chips">
+                <a href="{% url 'appointments:notifications_page' %}" class="tab-chip {% if active_tab == 'all' %}active{% endif %}">
+                    Toutes
+                </a>
+                <a href="{% url 'appointments:notifications_page' %}?tab=unread" class="tab-chip {% if active_tab == 'unread' %}active{% endif %}">
+                    Non lues ({{ unread_count }})
+                </a>
             </div>
 
-            {% if not notif.is_read %}
-            <form method="POST" class="ms-3">
+            <form method="post" class="m-0">
                 {% csrf_token %}
-                <input type="hidden" name="notif_id" value="{{ notif.id }}">
-                <button class="btn btn-sm btn-outline-success" name="mark_one">
-                    ✔ Lu
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <button type="submit" name="mark_all" class="btn btn-sm btn-outline-primary rounded-pill px-3" {% if unread_count == 0 %}disabled{% endif %}>
+                    <i class="bi bi-check2-all me-1"></i>Tout marquer lu
                 </button>
             </form>
-            {% endif %}
-        </div>
-    {% empty %}
-        <p>Aucune notification.</p>
-    {% endfor %}
-</div>
+        </section>
 
+        <section class="notif-list">
+            {% for notif in notifications %}
+            <article class="notif-item {% if not notif.is_read %}unread{% endif %}">
+                <div class="notif-main">
+                    <h2 class="notif-main-title">
+                        {% if not notif.is_read %}<span class="notif-dot" aria-hidden="true"></span>{% endif %}
+                        {{ notif.title }}
+                    </h2>
+                    <p class="notif-message">{{ notif.message }}</p>
+                    <p class="notif-meta">
+                        {{ notif.created_at|date:"d/m/Y H:i" }}
+                        <span aria-hidden="true"> - </span>
+                        il y a {{ notif.created_at|timesince }}
+                    </p>
+                </div>
+
+                <div class="notif-actions">
+                    {% if not notif.is_read %}
+                    <form method="post" class="m-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="tab" value="{{ active_tab }}">
+                        <input type="hidden" name="notif_id" value="{{ notif.id }}">
+                        <button type="submit" name="mark_one" class="btn btn-sm btn-success rounded-pill px-3">
+                            <i class="bi bi-check2 me-1"></i>Marquer lu
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="badge text-bg-light border text-secondary">Deja lu</span>
+                    {% endif %}
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-state">
+                <p class="fw-semibold mb-1">Aucune notification a afficher.</p>
+                <p class="mb-0">Quand une action arrive, elle apparaitra ici.</p>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+</div>
 {% endblock %}

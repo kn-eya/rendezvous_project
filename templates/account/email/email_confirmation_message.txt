@@ -1,0 +1,11 @@
+Bonjour {{ user.get_full_name|default:user.username }},
+
+Merci de rejoindre AlloRDV.
+Confirme ton adresse e‑mail en cliquant sur le lien ci-dessous :
+
+{{ activate_url }}
+
+Si le bouton ou le lien ne fonctionne pas, copie/colle l’URL dans ton navigateur.
+
+À tout de suite,
+L’équipe AlloRDV

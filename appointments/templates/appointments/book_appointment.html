@@ -1,93 +1,231 @@
-{% extends "base.html" %}
-{% load static %}
+﻿{% extends "base.html" %}
 
-{% block title %}Réserver Rendez-vous{% endblock %}
+{% block title %}Reserver rendez-vous{% endblock %}
 
 {% block content %}
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-body {
-    background: #f0f2f5;
-    font-family: 'Poppins', sans-serif;
-}
-.booking-container {
-    max-width: 500px;
-    margin: 50px auto;
-    background: #ffffff;
-    padding: 30px 35px;
-    border-radius: 20px;
-    box-shadow: 0 12px 25px rgba(0,0,0,0.1);
-}
-.booking-container h2 {
-    text-align: center;
-    margin-bottom: 25px;
-    color: #333;
-    font-size: 1.8rem;
-}
-.booking-form label {
-    font-weight: 500;
-    color: #555;
-    display: block;
-    margin-bottom: 6px;
-}
-.booking-form input,
-.booking-form textarea {
-    width: 100%;
-    padding: 10px 12px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    border: 1px solid #ccc;
-    font-size: 0.95rem;
-}
-.booking-form button {
-    width: 100%;
-    padding: 12px;
-    background: #6c5ce7;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-}
+    .booking-page .booking-card {
+        max-width: 760px;
+        border: 1px solid #dbe3ef;
+        border-radius: 18px;
+        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.07);
+    }
+
+    .booking-calendar {
+        border: 1px solid #d8e2f0;
+        border-radius: 14px;
+        background: #fff;
+        padding: 10px;
+    }
+
+    .calendar-selected {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .slot-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 40px;
+    }
+
+    .slot-btn {
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        color: #1e293b;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .slot-btn:hover {
+        border-color: #0f766e;
+        color: #0f766e;
+        background: #ecfdf5;
+    }
+
+    .slot-btn.active {
+        border-color: #0f766e;
+        background: #0f766e;
+        color: #fff;
+        box-shadow: 0 10px 22px rgba(15, 118, 110, 0.28);
+    }
 </style>
 
+<div class="booking-page container py-4 py-lg-5">
+    <div class="card booking-card mx-auto">
+        <div class="card-body p-4 p-md-5">
+            <h2 class="h4 mb-1">Reserver avec {{ provider.user.username }}</h2>
+            {% if category %}
+            <p class="text-muted mb-4">Categorie: {{ category.name }}</p>
+            {% endif %}
 
-<div class="container mt-5">
-    <h2>Réserver avec {{ provider.user.username }}</h2>
+            <form id="bookingForm" method="post" novalidate>
+                {% csrf_token %}
 
-    <form method="post" class="mt-4">
-        {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Choisissez une date</label>
+                    <div id="bookingCalendar" class="booking-calendar"></div>
+                    <input type="date" id="id_date" name="date" class="form-control d-none" min="{{ min_date }}" required>
+                    <div id="selectedDateLabel" class="calendar-selected">Selectionnez une date pour voir les creneaux.</div>
+                </div>
 
-        <!-- Catégorie et Provider cachés -->
-        <input type="hidden" name="category" value="{{ category.id }}">
-        <input type="hidden" name="provider" value="{{ provider.id }}">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Choisissez un creneau</label>
+                    <div id="slotButtons" class="slot-grid"></div>
+                    <input type="hidden" name="start_time" id="id_start_time" required>
+                    <input type="hidden" name="end_time" id="id_end_time">
+                    <small id="slot-feedback" class="text-muted d-block mt-2"></small>
+                </div>
 
-        <div class="mb-3">
-            <label for="id_date" class="form-label">Date</label>
-            {{ form.date }}
+                <div class="mb-4">
+                    <label for="id_notes" class="form-label">Notes (optionnel)</label>
+                    {{ form.notes }}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="bookSubmitBtn">
+                    Confirmer le rendez-vous
+                </button>
+            </form>
         </div>
-
-        <div class="mb-3">
-            <label for="id_time" class="form-label">Heure</label>
-            {{ form.time }}
-        </div>
-
-        <div class="mb-3">
-            <label for="id_notes" class="form-label">Notes (optionnel)</label>
-            {{ form.notes }}
-        </div>
-
-        <button type="submit" class="btn btn-primary">Réserver</button>
-    </form>
-
-    {% if messages %}
-        <div class="mt-3">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
+    </div>
 </div>
-{% endblock %}
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("bookingForm");
+    const dateInput = document.getElementById("id_date");
+    const calendarEl = document.getElementById("bookingCalendar");
+    const selectedDateLabel = document.getElementById("selectedDateLabel");
+    const slotButtons = document.getElementById("slotButtons");
+    const startTimeInput = document.getElementById("id_start_time");
+    const endTimeInput = document.getElementById("id_end_time");
+    const feedback = document.getElementById("slot-feedback");
+
+    const endpoint = "{% url 'appointments:ajax_available_slots' %}";
+    const providerId = "{{ provider.id }}";
+    const minDate = "{{ min_date }}";
+
+    const formatHumanDate = (dateStr) => {
+        if (!dateStr) return "";
+        const parsed = new Date(`${dateStr}T00:00:00`);
+        return parsed.toLocaleDateString("fr-FR", {
+            weekday: "long",
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        });
+    };
+
+    const resetSlots = (message = "") => {
+        slotButtons.innerHTML = "";
+        startTimeInput.value = "";
+        endTimeInput.value = "";
+        feedback.textContent = message;
+    };
+
+    const computeEndTime = (slot) => {
+        const [hour, minute] = slot.split(":").map(Number);
+        const startDate = new Date(2000, 0, 1, hour, minute, 0);
+        startDate.setMinutes(startDate.getMinutes() + 60);
+        const endHour = String(startDate.getHours()).padStart(2, "0");
+        const endMinute = String(startDate.getMinutes()).padStart(2, "0");
+        return `${endHour}:${endMinute}`;
+    };
+
+    const selectSlot = (slot) => {
+        startTimeInput.value = slot;
+        endTimeInput.value = computeEndTime(slot);
+        slotButtons.querySelectorAll(".slot-btn").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.slot === slot);
+        });
+    };
+
+    const renderSlots = (slots) => {
+        slotButtons.innerHTML = "";
+        slots.forEach((slot) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "slot-btn";
+            button.dataset.slot = slot;
+            button.textContent = slot;
+            button.addEventListener("click", () => selectSlot(slot));
+            slotButtons.appendChild(button);
+        });
+    };
+
+    const loadSlots = async () => {
+        const dateValue = dateInput.value;
+        if (!dateValue) {
+            resetSlots("Selectionnez une date pour afficher les disponibilites.");
+            return;
+        }
+
+        resetSlots("Chargement des creneaux...");
+
+        try {
+            const response = await fetch(
+                `${endpoint}?provider_id=${encodeURIComponent(providerId)}&date=${encodeURIComponent(dateValue)}`,
+            );
+            const data = await response.json();
+
+            if (data.status !== "success" || !Array.isArray(data.slots) || data.slots.length === 0) {
+                resetSlots("Aucun creneau disponible pour cette date.");
+                return;
+            }
+
+            renderSlots(data.slots);
+            feedback.textContent = `${data.slots.length} creneau(x) disponible(s).`;
+        } catch (error) {
+            resetSlots("Erreur de chargement des creneaux.");
+        }
+    };
+
+    const syncDate = (dateValue) => {
+        dateInput.value = dateValue || "";
+        selectedDateLabel.textContent = dateValue
+            ? `Date selectionnee: ${formatHumanDate(dateValue)}`
+            : "Selectionnez une date pour voir les creneaux.";
+        loadSlots();
+    };
+
+    if (dateInput) {
+        dateInput.setAttribute("min", minDate);
+    }
+
+    if (window.flatpickr && calendarEl) {
+        flatpickr(calendarEl, {
+            inline: true,
+            locale: window.flatpickr.l10ns.fr,
+            dateFormat: "Y-m-d",
+            minDate,
+            defaultDate: minDate,
+            onChange: (_selectedDates, dateStr) => syncDate(dateStr),
+        });
+        syncDate(minDate);
+    } else {
+        calendarEl.classList.add("d-none");
+        dateInput.classList.remove("d-none");
+        dateInput.addEventListener("change", () => syncDate(dateInput.value));
+        syncDate(dateInput.value || minDate);
+    }
+
+    form.addEventListener("submit", (event) => {
+        if (!dateInput.value || !startTimeInput.value) {
+            event.preventDefault();
+            feedback.textContent = "Choisissez une date puis un creneau avant de reserver.";
+            feedback.classList.remove("text-muted");
+            feedback.classList.add("text-danger");
+        }
+    });
+});
+</script>
+{% endblock %}

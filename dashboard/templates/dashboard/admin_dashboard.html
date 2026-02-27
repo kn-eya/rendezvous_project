@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h2 class="mb-1">Dashboard Administrateur</h2>
+      <p class="text-muted mb-0">Vue globale des reservations, prestataires et services.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'appointments:admin_services_list' %}" class="btn btn-outline-primary btn-sm">
+        Gerer services
+      </a>
+      <a href="{% url 'admin:index' %}" class="btn btn-dark btn-sm">
+        Django Admin
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">Total rendez-vous</div>
+          <div class="fs-3 fw-bold">{{ kpis.total_appointments }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">Rendez-vous aujourd'hui</div>
+          <div class="fs-3 fw-bold">{{ kpis.today_appointments }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-2">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">En attente</div>
+          <div class="fs-4 fw-bold text-warning">{{ kpis.pending_appointments }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-2">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">Acceptes</div>
+          <div class="fs-4 fw-bold text-success">{{ kpis.accepted_appointments }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-2">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">Refuses</div>
+          <div class="fs-4 fw-bold text-danger">{{ kpis.refused_appointments }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">Services actifs</div>
+          <div class="fs-4 fw-bold">{{ kpis.active_services }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">Prestataires</div>
+          <div class="fs-4 fw-bold">{{ kpis.providers_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <div class="text-muted small">Clients</div>
+          <div class="fs-4 fw-bold">{{ kpis.clients_count }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Reservations sur 7 jours</h5>
+          {% for row in daily_stats %}
+            <div class="mb-2">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>{{ row.label }}</span>
+                <span class="fw-semibold">{{ row.total }}</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ row.bar_width }}%;"></div>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0">Aucune reservation recente.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Statuts</h5>
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="border rounded p-2">
+                <div class="small text-muted">Annules</div>
+                <div class="fs-5 fw-semibold">{{ kpis.cancelled_appointments }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="border rounded p-2">
+                <div class="small text-muted">Refuses</div>
+                <div class="fs-5 fw-semibold">{{ kpis.refused_appointments }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="border rounded p-2">
+                <div class="small text-muted">En attente</div>
+                <div class="fs-5 fw-semibold">{{ kpis.pending_appointments }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="border rounded p-2">
+                <div class="small text-muted">Acceptes</div>
+                <div class="fs-5 fw-semibold">{{ kpis.accepted_appointments }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Top services</h5>
+          <ul class="list-group list-group-flush">
+            {% for row in top_services %}
+              <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <span>{{ row.name }}</span>
+                <span class="badge bg-primary rounded-pill">{{ row.total }}</span>
+              </li>
+            {% empty %}
+              <li class="list-group-item px-0 text-muted">Aucune donnee.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Top prestataires</h5>
+          <ul class="list-group list-group-flush">
+            {% for row in top_providers %}
+              <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <span>{{ row.name }}</span>
+                <span class="badge bg-dark rounded-pill">{{ row.total }}</span>
+              </li>
+            {% empty %}
+              <li class="list-group-item px-0 text-muted">Aucune donnee.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Derniers rendez-vous</h5>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Prestataire</th>
+              <th>Service</th>
+              <th>Date</th>
+              <th>Heure</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for appt in recent_appointments %}
+              <tr>
+                <td>{{ appt.client.username }}</td>
+                <td>{{ appt.provider.user.username }}</td>
+                <td>{{ appt.category.service.name }}</td>
+                <td>{{ appt.date }}</td>
+                <td>{{ appt.start_time }}</td>
+                <td>
+                  <span class="badge
+                    {% if appt.status == 'accepted' %}bg-success
+                    {% elif appt.status == 'pending' %}bg-warning text-dark
+                    {% elif appt.status == 'refused' %}bg-danger
+                    {% elif appt.status == 'cancelled' %}bg-secondary
+                    {% elif appt.status == 'done' %}bg-primary
+                    {% else %}bg-light text-dark{% endif %}">
+                    {{ appt.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-3">Aucun rendez-vous.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

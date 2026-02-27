@@ -1,8 +1,10 @@
 /* ===== Variables de couleurs ===== */
 :root {
-    --color-primary: #00b894;       /* turquoise */
-    --color-secondary: #6c5ce7;     /* violet */
-    --color-gradient: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    --color-primary: #0FB59C;       /* turquoise adouci */
+    --color-primary-dark: #0A8A78;
+    --color-secondary: #3F5BFF;     /* cobalt */
+    --color-accent: #F4B740;        /* or doux */
+    --color-gradient: linear-gradient(120deg, var(--color-primary), var(--color-secondary));
     --color-bg: #f5f7fa;            /* gris clair pour sections neutres */
     --color-light: #ffffff;          /* blanc */
     --color-dark: #1f2937;           /* gris foncé pour texte et navbar/footer */
@@ -78,25 +80,23 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ===== Boutons ===== */
 .btn-primary {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    border-color: transparent;
     color: var(--color-light);
 }
 
 .btn-primary:hover {
-    background-color: #009f7f;
-    border-color: #009f7f;
+    filter: brightness(1.05);
 }
 
 .btn-success {
-    background-color: var(--color-secondary);
-    border-color: var(--color-secondary);
+    background: linear-gradient(135deg, var(--color-secondary), #3242c8);
+    border-color: transparent;
     color: var(--color-light);
 }
 
 .btn-success:hover {
-    background-color: #5945c7;
-    border-color: #5945c7;
+    filter: brightness(1.05);
 }
 
 .btn-danger {
@@ -120,12 +120,12 @@ h1, h2, h3, h4, h5, h6 {
 
 .form-control:focus, .form-select:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.2rem rgba(0,184,148,0.25);
+    box-shadow: 0 0 0 0.2rem rgba(15,181,156,0.25);
 }
 
 /* ===== Footer ===== */
 footer {
-    background-color: var(--color-dark);
+    background: linear-gradient(120deg, #044d45 0%, #1a2678 100%);
     color: var(--color-light);
     padding: 3rem 1rem;
     text-align: center;

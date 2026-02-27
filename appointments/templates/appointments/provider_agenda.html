@@ -1,79 +1,434 @@
 {% extends "base.html" %}
-{% load static %}
+
+{% block title %}Mon calendrier{% endblock %}
 
 {% block content %}
-
-<!-- FullCalendar CSS -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-<!-- FullCalendar JS -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<!-- Axios pour les requêtes AJAX -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <style>
+    .agenda-wrapper {
+        max-width: 1280px;
+        margin: 24px auto;
+        padding: 0 12px;
+    }
+
+    .agenda-card {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
     #calendar {
-        max-width: 900px;
-        margin: 40px auto;
+        min-height: 640px;
+    }
+
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.88rem;
+        color: #334155;
+        margin-right: 10px;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: inline-block;
+    }
+
+    .step-text {
+        color: #475569;
+        font-size: 0.92rem;
+    }
+
+    .blocked-list-scroll {
+        max-height: 540px;
+        overflow: auto;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.1rem;
     }
 </style>
 
-<div id="calendar"></div>
+<div class="agenda-wrapper">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <h2 class="h4 mb-1">Mon calendrier</h2>
+            <div class="step-text">Etapes: 1) Cliquez sur <strong>+ Creer un creneau bloque</strong> 2) Remplissez date/heure/duree 3) Validez.</div>
+        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBlockedSlotModal">
+            + Creer un creneau bloque
+        </button>
+    </div>
+
+    <div id="agenda-feedback" class="alert d-none" role="alert"></div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="agenda-card p-3">
+                <div class="mb-2">
+                    <span class="legend-item"><span class="legend-dot" style="background:#0ea5a4"></span>Libre</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#475569"></span>Bloque</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>En attente</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>Accepte</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>Refuse</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#6b7280"></span>Annule</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>Termine</span>
+                </div>
+                <div id="calendar"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="agenda-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h3 class="h6 mb-0">Creneaux bloques</h3>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-8">
+                        <input type="date" id="blocked-list-date" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-4 d-grid">
+                        <button class="btn btn-outline-secondary btn-sm" id="refresh-blocked-list">Afficher</button>
+                    </div>
+                </div>
+
+                <div id="blocked-slots-list" class="blocked-list-scroll"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createBlockedSlotModal" tabindex="-1" aria-labelledby="createBlockedSlotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="create-blocked-slot-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createBlockedSlotModalLabel">Creer un creneau bloque</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="blocked-date" class="form-label">Date</label>
+                        <input type="date" id="blocked-date" name="date" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="blocked-start-time" class="form-label">Heure debut</label>
+                        <input type="time" id="blocked-start-time" name="start_time" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="blocked-duration" class="form-label">Duree</label>
+                        <select id="blocked-duration" name="duration" class="form-select" required>
+                            <option value="30">30 min</option>
+                            <option value="60" selected>60 min</option>
+                            <option value="90">90 min</option>
+                            <option value="120">120 min</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-1">
+                        <label for="blocked-reason" class="form-label">Motif (optionnel)</label>
+                        <input type="text" id="blocked-reason" name="reason" class="form-control" placeholder="Pause, indisponible, etc.">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Bloquer ce creneau</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="appointmentModalLabel">Rendez-vous</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-1"><strong>Client:</strong> <span id="modal-client">-</span></p>
+                <p class="mb-1"><strong>Service:</strong> <span id="modal-service">-</span></p>
+                <p class="mb-1"><strong>Categorie:</strong> <span id="modal-category">-</span></p>
+                <p class="mb-1"><strong>Date:</strong> <span id="modal-date">-</span></p>
+                <p class="mb-1"><strong>Heure:</strong> <span id="modal-time">-</span></p>
+                <p class="mb-2"><strong>Statut:</strong> <span id="modal-status">-</span></p>
+                <p class="mb-0"><strong>Notes:</strong></p>
+                <p id="modal-notes" class="text-muted mb-0">Aucune note.</p>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div id="modal-actions" class="d-flex flex-wrap gap-2"></div>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const calendarEl = document.getElementById('calendar');
-    const providerId = '{{ provider.id }}';
-    const SLOT_DURATION = 60; // durée en minutes
+document.addEventListener("DOMContentLoaded", () => {
+    const providerId = "{{ provider.id }}";
+    const eventsUrl = "{% url 'appointments:provider_agenda_events' provider.id %}";
+    const createBlockedUrl = "{% url 'appointments:provider_create_blocked_slot_ajax' %}";
+    const listBlockedUrl = "{% url 'appointments:provider_blocked_slots_ajax' %}";
+    const deleteBlockedPattern = "{% url 'appointments:provider_delete_blocked_slot_ajax' 0 %}";
+    const statusUrlPattern = "{% url 'appointments:provider_update_appointment_status_ajax' 0 %}";
 
-    if (typeof FullCalendar === 'undefined') {
-        console.error("FullCalendar n'est pas chargé !");
-        return;
+    const feedbackEl = document.getElementById("agenda-feedback");
+    const blockedListEl = document.getElementById("blocked-slots-list");
+    const blockedListDateEl = document.getElementById("blocked-list-date");
+    const blockedDateInputEl = document.getElementById("blocked-date");
+    const createFormEl = document.getElementById("create-blocked-slot-form");
+
+    const bs = typeof window !== "undefined" ? window.bootstrap : undefined;
+    const createModalEl = document.getElementById("createBlockedSlotModal");
+    const createModal = bs?.Modal ? bs.Modal.getOrCreateInstance(createModalEl) : null;
+    const appointmentModalEl = document.getElementById("appointmentModal");
+    const appointmentModal = bs?.Modal ? bs.Modal.getOrCreateInstance(appointmentModalEl) : null;
+
+    let selectedAppointment = null;
+
+    const statusActionConfig = {
+        accepted: { label: "Accepter", className: "btn-success" },
+        refused: { label: "Refuser", className: "btn-danger" },
+        cancelled: { label: "Annuler", className: "btn-outline-secondary" },
+        done: { label: "Marquer termine", className: "btn-primary" },
+    };
+
+    const todayIso = new Date().toISOString().slice(0, 10);
+    blockedListDateEl.value = todayIso;
+    blockedDateInputEl.value = todayIso;
+    blockedDateInputEl.min = todayIso;
+
+    function getCsrfToken() {
+        const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : "";
     }
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek',
-        nowIndicator: true,
-        allDaySlot: false,
-        slotMinTime: "08:00:00",
-        slotMaxTime: "20:00:00",
-        headerToolbar: { 
-            left: 'prev,next today', 
-            center: 'title', 
-            right: 'timeGridWeek,timeGridDay' 
-        },
-        events: `/appointments/provider/${providerId}/agenda/events/`,
+    function showFeedback(type, message) {
+        feedbackEl.className = `alert alert-${type}`;
+        feedbackEl.textContent = message;
+        feedbackEl.classList.remove("d-none");
+        window.clearTimeout(showFeedback.timer);
+        showFeedback.timer = window.setTimeout(() => {
+            feedbackEl.classList.add("d-none");
+        }, 4000);
+    }
 
-        eventClick: function(info) {
-            const booked = info.event.extendedProps.booked;
+    function formatDate(dateObj) {
+        return new Intl.DateTimeFormat("fr-FR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        }).format(dateObj);
+    }
 
-            if (booked) {
-                alert('Ce créneau est déjà réservé.');
-                return;
-            }
+    function formatTime(dateObj) {
+        return new Intl.DateTimeFormat("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+        }).format(dateObj);
+    }
 
-            if (confirm(`Voulez-vous réserver ce créneau le ${info.event.start.toLocaleString()} ?`)) {
-                axios.post("{% url 'appointments:book_appointment_ajax' %}", 
-                    new URLSearchParams({
-                        provider_id: providerId,
-                        start: info.event.start.toISOString()
-                    })
-                ).then(res => {
-                    if (res.data.status === 'success') {
-                        alert('Rendez-vous réservé ✅');
-                        calendar.refetchEvents(); // recharge les événements
-                    } else {
-                        alert(res.data.message || 'Erreur lors de la réservation.');
-                    }
-                }).catch(err => {
-                    console.error(err);
-                    alert('Erreur lors de la réservation.');
-                });
-            }
+    async function postForm(url, payload) {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCsrfToken(),
+            },
+            body: new URLSearchParams(payload),
+        });
+        const data = await response.json();
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Erreur inattendue.");
+        }
+        return data;
+    }
+
+    async function getJson(url) {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Erreur inattendue.");
+        }
+        return data;
+    }
+
+    function renderBlockedSlots(slots) {
+        if (!Array.isArray(slots) || slots.length === 0) {
+            blockedListEl.innerHTML = '<div class="text-muted small">Aucun creneau bloque pour cette date.</div>';
+            return;
+        }
+
+        blockedListEl.innerHTML = slots
+            .map((slot) => {
+                const reason = slot.reason ? `<div class="text-muted small">${slot.reason}</div>` : "";
+                return `
+                    <div class="border rounded-3 p-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div>
+                                <div class="fw-semibold">${slot.start_time} - ${slot.end_time}</div>
+                                ${reason}
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-delete-slot-id="${slot.id}">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            })
+            .join("");
+    }
+
+    async function refreshBlockedSlotsList() {
+        const targetDate = blockedListDateEl.value || todayIso;
+        blockedListEl.innerHTML = '<div class="text-muted small">Chargement...</div>';
+        try {
+            const data = await getJson(`${listBlockedUrl}?date=${encodeURIComponent(targetDate)}`);
+            renderBlockedSlots(data.slots || []);
+        } catch (error) {
+            blockedListEl.innerHTML = `<div class="text-danger small">${error.message}</div>`;
+        }
+    }
+
+    function fillAppointmentModal(event) {
+        const props = event.extendedProps;
+        selectedAppointment = props;
+
+        document.getElementById("modal-client").textContent = props.client || "-";
+        document.getElementById("modal-service").textContent = props.service || "-";
+        document.getElementById("modal-category").textContent = props.category || "-";
+        document.getElementById("modal-date").textContent = formatDate(event.start);
+        document.getElementById("modal-time").textContent = `${formatTime(event.start)} - ${formatTime(event.end)}`;
+        document.getElementById("modal-status").textContent = props.statusLabel || props.status || "-";
+        document.getElementById("modal-notes").textContent = props.notes || "Aucune note.";
+
+        const actionsRoot = document.getElementById("modal-actions");
+        actionsRoot.innerHTML = "";
+
+        const actions = [];
+        if (props.canAccept) actions.push("accepted");
+        if (props.canRefuse) actions.push("refused");
+        if (props.canCancel) actions.push("cancelled");
+        if (props.canDone) actions.push("done");
+
+        if (actions.length === 0) {
+            actionsRoot.innerHTML = '<span class="text-muted small">Aucune action disponible.</span>';
+            return;
+        }
+
+        actions.forEach((status) => {
+            const config = statusActionConfig[status];
+            if (!config) return;
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `btn btn-sm ${config.className}`;
+            button.textContent = config.label;
+            button.addEventListener("click", () => updateAppointmentStatus(status));
+            actionsRoot.appendChild(button);
+        });
+    }
+
+    async function updateAppointmentStatus(targetStatus) {
+        if (!selectedAppointment?.appointmentId) return;
+        const endpoint = statusUrlPattern.replace("/0/status/", `/${selectedAppointment.appointmentId}/status/`);
+        try {
+            const data = await postForm(endpoint, { status: targetStatus });
+            appointmentModal?.hide();
+            showFeedback("success", `Statut mis a jour: ${data.status_label}.`);
+            calendar.refetchEvents();
+        } catch (error) {
+            showFeedback("danger", error.message);
+        }
+    }
+
+    createFormEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = {
+            provider_id: providerId,
+            date: blockedDateInputEl.value,
+            start_time: document.getElementById("blocked-start-time").value,
+            duration: document.getElementById("blocked-duration").value,
+            reason: document.getElementById("blocked-reason").value,
+        };
+
+        try {
+            await postForm(createBlockedUrl, payload);
+            createModal?.hide();
+            createFormEl.reset();
+            blockedDateInputEl.value = todayIso;
+            blockedDateInputEl.min = todayIso;
+            blockedListDateEl.value = payload.date || todayIso;
+            showFeedback("success", "Creneau bloque avec succes.");
+            await refreshBlockedSlotsList();
+            calendar.refetchEvents();
+        } catch (error) {
+            showFeedback("danger", error.message);
         }
     });
 
+    blockedListEl.addEventListener("click", async (event) => {
+        const deleteButton = event.target.closest("[data-delete-slot-id]");
+        if (!deleteButton) return;
+
+        const slotId = deleteButton.getAttribute("data-delete-slot-id");
+        if (!slotId) return;
+
+        try {
+            const endpoint = deleteBlockedPattern.replace("/0/delete/", `/${slotId}/delete/`);
+            await postForm(endpoint, {});
+            showFeedback("success", "Creneau supprime.");
+            await refreshBlockedSlotsList();
+            calendar.refetchEvents();
+        } catch (error) {
+            showFeedback("danger", error.message);
+        }
+    });
+
+    document.getElementById("refresh-blocked-list").addEventListener("click", refreshBlockedSlotsList);
+    blockedListDateEl.addEventListener("change", refreshBlockedSlotsList);
+
+    const calendar = new FullCalendar.Calendar(document.getElementById("calendar"), {
+        initialView: "timeGridWeek",
+        locale: "fr",
+        nowIndicator: true,
+        allDaySlot: false,
+        slotMinTime: "07:00:00",
+        slotMaxTime: "22:00:00",
+        headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "timeGridWeek,timeGridDay",
+        },
+        events: eventsUrl,
+        eventClick: (info) => {
+            const eventType = info.event.extendedProps.eventType;
+            if (eventType === "appointment") {
+                fillAppointmentModal(info.event);
+                appointmentModal?.show();
+                return;
+            }
+            if (eventType === "slot") {
+                showFeedback("info", "Utilisez le bouton '+ Creer un creneau bloque' pour bloquer un creneau.");
+                return;
+            }
+            if (eventType === "blocked") {
+                blockedListDateEl.value = info.event.start.toISOString().slice(0, 10);
+                refreshBlockedSlotsList();
+                showFeedback("info", "Creneau bloque: utilisez la liste a droite pour le supprimer.");
+            }
+        },
+    });
+
     calendar.render();
+    refreshBlockedSlotsList();
 });
 </script>
-
 {% endblock %}

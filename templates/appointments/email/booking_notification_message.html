@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ subject }}</title>
+  <style>
+    body { margin: 0; padding: 0; background: #f5f7fb; font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; }
+    .wrapper { max-width: 640px; margin: 0 auto; padding: 32px 16px; }
+    .logo-wrap { text-align: center; margin-bottom: 16px; }
+    .logo { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 8px 24px rgba(0, 184, 148, 0.25); }
+    .card { background: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08); }
+    .eyebrow { margin: 0; color: #6b7280; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    h1 { margin: 16px 0 10px; font-size: 26px; color: #0f172a; }
+    p { line-height: 1.6; margin: 10px 0; }
+    .info-box { margin: 18px 0; border: 1px solid #dbe7ff; border-radius: 12px; background: #f8fbff; padding: 14px; }
+    .row { margin: 0 0 8px; font-size: 14px; color: #334155; }
+    .row:last-child { margin-bottom: 0; }
+    .label { display: inline-block; min-width: 104px; color: #64748b; font-weight: 700; }
+    .btn-wrap { text-align: center; margin: 24px 0; }
+    .btn { display: inline-block; padding: 14px 22px; border-radius: 12px; background: linear-gradient(135deg, #00b894, #16c2b0); color: #ffffff; text-decoration: none; font-weight: 700; box-shadow: 0 12px 30px rgba(0, 184, 148, 0.25); }
+    .muted { color: #6b7280; font-size: 14px; }
+    .footer { text-align: center; margin-top: 16px; color: #94a3b8; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="logo-wrap">
+      <img class="logo" src="{{ logo_url }}" alt="AlloRDV">
+    </div>
+    <div class="card">
+      <p class="eyebrow">AlloRDV - {{ eyebrow }}</p>
+      <h1>{{ heading }}</h1>
+      <p>Bonjour {{ recipient_name }},</p>
+      <p>{{ intro }}</p>
+
+      <div class="info-box">
+        <p class="row"><span class="label">Prestataire:</span> {{ provider_name }}</p>
+        <p class="row"><span class="label">Client:</span> {{ client_name }}</p>
+        <p class="row"><span class="label">Service:</span> {{ service_name }}</p>
+        <p class="row"><span class="label">Categorie:</span> {{ category_name }}</p>
+        <p class="row"><span class="label">Date:</span> {{ date_label }}</p>
+        <p class="row"><span class="label">Creneau:</span> {{ slot_label }}</p>
+        {% if notes %}
+        <p class="row"><span class="label">Notes:</span> {{ notes }}</p>
+        {% endif %}
+      </div>
+
+      <p>{{ role_note }}</p>
+      <div class="btn-wrap">
+        <a class="btn" href="{{ action_url }}">{{ action_label }}</a>
+      </div>
+
+      <p class="muted">Si le bouton ne fonctionne pas, copie/colle ce lien:</p>
+      <p style="word-break: break-all;">{{ action_url }}</p>
+    </div>
+    <div class="footer">
+      &copy; {{ current_year }} AlloRDV - Rendez-vous en toute confiance.
+    </div>
+  </div>
+</body>
+</html>

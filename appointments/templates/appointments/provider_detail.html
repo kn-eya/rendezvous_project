@@ -1,218 +1,451 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block content %}
-
-<!-- ====== Styles ====== -->
 <style>
-/* Container prestataire */
-.provider-card {
-    max-width: 1000px;
-    margin: 50px auto;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
-    overflow: hidden;
-    padding: 30px;
-    font-family: 'Segoe UI', sans-serif;
-}
+    .provider-profile-page {
+        --pp-border: #dbe3ef;
+        --pp-surface: #ffffff;
+        --pp-muted: #64748b;
+        --pp-text: #0f172a;
+        --pp-brand: #0f766e;
+        --pp-brand-soft: #e6f4f2;
+        --pp-accent: #ea580c;
+    }
 
-/* Header profil */
-.provider-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 30px;
-}
+    .profile-hero {
+        margin-top: 14px;
+        border: 1px solid #cae8e4;
+        border-radius: 22px;
+        background: linear-gradient(125deg, #f0fdfa 0%, #eff6ff 56%, #fff7ed 100%);
+        padding: 22px;
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
 
-.photo-wrapper {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    border: 4px solid #6c5ce7;
-    overflow: hidden;
-    flex-shrink: 0;
-}
+    .identity-wrap {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
 
-.photo-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transition: transform 0.3s;
-}
+    .profile-photo {
+        width: 98px;
+        height: 98px;
+        border-radius: 22px;
+        border: 3px solid #0f766e;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #fff;
+    }
 
-.photo-wrapper img:hover {
-    transform: scale(1.05);
-}
+    .profile-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-.provider-header h2 {
-    margin: 0;
-    font-size: 28px;
-    color: #2d3436;
-}
+    .identity-name {
+        margin: 0;
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: var(--pp-text);
+    }
 
-.provider-header h3 {
-    margin: 5px 0 0 0;
-    font-weight: 400;
-    color: #636e72;
-}
+    .identity-subtitle {
+        margin: 3px 0 8px;
+        color: var(--pp-muted);
+    }
 
-/* Détails prestataire */
-.provider-details {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 25px;
-    margin-bottom: 30px;
-}
+    .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
 
-.provider-details p {
-    margin: 0;
-    font-size: 16px;
-    color: #2d3436;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #c7d9f4;
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: #ffffff;
+        color: #1e3a8a;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
 
-/* Carousel / Galerie */
-.provider-gallery {
-    margin-top: 20px;
-}
+    .hero-actions {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
 
-.swiper {
-    padding: 15px 0;
-}
+    .profile-grid {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 12px;
+    }
 
-.swiper-slide {
-    background: #f8f9fb;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    text-align: center;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+    .panel {
+        border: 1px solid var(--pp-border);
+        background: var(--pp-surface);
+        border-radius: 16px;
+        overflow: hidden;
+    }
 
-.swiper-slide img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    transition: transform 0.3s;
-}
+    .panel-head {
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid #edf2f7;
+    }
 
-.swiper-slide img:hover {
-    transform: scale(1.05);
-}
+    .panel-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--pp-text);
+    }
 
-.swiper-slide h4 {
-    margin: 5px 0 3px 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #2d3436;
-}
+    .panel-subtitle {
+        margin: 4px 0 0;
+        color: var(--pp-muted);
+        font-size: 0.84rem;
+    }
 
-.swiper-slide p {
-    font-size: 13px;
-    color: #636e72;
-    margin: 0;
-}
+    .panel-body {
+        padding: 14px 16px;
+    }
 
-.swiper-slide .price {
-    font-weight: 600;
-    color: #6c5ce7;
-    margin-top: 5px;
-}
+    .fact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .fact-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f8fafc;
+        padding: 10px 12px;
+    }
+
+    .fact-label {
+        margin: 0;
+        color: var(--pp-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+    }
+
+    .fact-value {
+        margin: 4px 0 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--pp-text);
+    }
+
+    .contact-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+    }
+
+    .contact-item {
+        border: 1px solid #e8edf5;
+        border-radius: 10px;
+        background: #fff;
+        padding: 9px 10px;
+        font-size: 0.92rem;
+    }
+
+    .contact-item strong {
+        color: #334155;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .schedule-table {
+        margin: 0;
+    }
+
+    .schedule-table thead th {
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--pp-muted);
+        background: #f8fafc;
+    }
+
+    .schedule-table td {
+        vertical-align: middle;
+    }
+
+    .slot-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        background: var(--pp-brand-soft);
+        border: 1px solid #bae6de;
+        color: var(--pp-brand);
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 9px;
+        margin: 2px 5px 2px 0;
+    }
+
+    .closed-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 9px;
+    }
+
+    .portfolio-panel {
+        margin-top: 12px;
+    }
+
+    .portfolio-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .portfolio-card {
+        border: 1px solid #e4eaf3;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        height: 100%;
+    }
+
+    .portfolio-image {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        background: #f1f5f9;
+    }
+
+    .portfolio-content {
+        padding: 10px 12px 12px;
+    }
+
+    .portfolio-title {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--pp-text);
+    }
+
+    .portfolio-description {
+        margin: 6px 0 8px;
+        font-size: 0.84rem;
+        color: var(--pp-muted);
+        min-height: 34px;
+    }
+
+    .portfolio-price {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--pp-accent);
+    }
+
+    .empty-note {
+        border: 1px dashed #d3deec;
+        border-radius: 12px;
+        padding: 18px;
+        text-align: center;
+        color: var(--pp-muted);
+        margin: 0;
+    }
+
+    @media (max-width: 991.98px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .portfolio-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .portfolio-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .identity-wrap {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .fact-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
-<!-- ====== HTML ====== -->
-<div class="provider-card">
-
-    <!-- Header -->
-    <header class="provider-header">
-        <div class="photo-wrapper">
-            {% if provider.photo %}
-                <img src="{{ provider.photo.url }}" alt="{{ provider.user.username }}">
-            {% else %}
-                <img src="{% static 'default_avatar.png' %}" alt="Avatar">
-            {% endif %}
-        </div>
-        <div>
-            <h2>{{ provider.user.first_name }} {{ provider.user.last_name }}</h2>
-            {% if provider.service %}
-                <h3>{{ provider.service.name }}</h3>
-            {% endif %}
-        </div>
-    </header>
-
-    <!-- Détails -->
-    <div class="provider-details">
-        {% if provider.city %}
-            <p>📍 Ville: {{ provider.city }}</p>
-        {% endif %}
-        {% if provider.address %}
-            <p>🏠 Adresse: {{ provider.address }}</p>
-        {% endif %}
-        {% if provider.phone %}
-            <p>📞 Téléphone: {{ provider.phone }}</p>
-        {% endif %}
-        {% if provider.category %}
-            <p>📂 Catégorie: {{ provider.category.name }}</p>
-        {% endif %}
-    </div>
-
-    <!-- Galerie / Portfolio -->
-    {% if provider.portfolio.exists %}
-    <section class="provider-gallery">
-        <h3>🖼️ Galerie</h3>
-        <div class="swiper">
-            <div class="swiper-wrapper">
-                {% for item in provider.portfolio.all %}
-                <div class="swiper-slide">
-                    {% if item.image %}
-                        <img src="{{ item.image.url }}" alt="{{ item.title|default:'Travail' }}">
-                    {% else %}
-                        <img src="{% static 'default_image.png' %}" alt="Image manquante">
-                    {% endif %}
-                    <h4>{{ item.title|default:"Sans titre" }}</h4>
-                    <p>{{ item.description|default:"Pas de description" }}</p>
-                    <p class="price">Prix: {{ item.price|default:"-" }} €</p>
-                </div>
-                {% endfor %}
+<div class="provider-profile-page container py-3 py-lg-4">
+    <section class="profile-hero">
+        <div class="identity-wrap">
+            <div class="profile-photo">
+                {% if provider.photo %}
+                <img src="{{ provider.photo.url }}" alt="{{ display_name }}">
+                {% else %}
+                <img src="{% static 'default_avatar.png' %}" alt="{{ display_name }}">
+                {% endif %}
             </div>
-
-            <!-- Flèches -->
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+            <div>
+                <h1 class="identity-name">{{ display_name }}</h1>
+                <p class="identity-subtitle">@{{ provider.user.username }}</p>
+                <div class="badge-row">
+                    {% if provider.service %}
+                    <span class="meta-pill"><i class="bi bi-briefcase"></i>{{ provider.service.name }}</span>
+                    {% endif %}
+                    {% if provider.category %}
+                    <span class="meta-pill"><i class="bi bi-grid"></i>{{ provider.category.name }}</span>
+                    {% endif %}
+                    {% if provider.city %}
+                    <span class="meta-pill"><i class="bi bi-geo-alt"></i>{{ provider.city }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="hero-actions">
+            {% if is_owner %}
+            <a href="{% url 'appointments:provider_edit_profile' %}" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-pencil-square me-1"></i>Modifier profil
+            </a>
+            <a href="{% url 'appointments:provider_agenda' provider_id=provider.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-calendar3 me-1"></i>Mon calendrier
+            </a>
+            {% elif can_book %}
+            <a href="{% url 'appointments:book_appointment' provider_id=provider.id %}" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-calendar-check me-1"></i>Prendre rendez-vous
+            </a>
+            {% endif %}
+            <a href="{% url 'appointments:services_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                Retour services
+            </a>
         </div>
     </section>
-    {% else %}
-        <p style="text-align:center; margin-top:20px; color:#555;">Aucun travail publié pour ce prestataire.</p>
-    {% endif %}
 
+    <div class="profile-grid">
+        <aside class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Infos rapides</h2>
+                <p class="panel-subtitle">Resume du profil</p>
+            </div>
+            <div class="panel-body">
+                <div class="fact-grid">
+                    <div class="fact-card">
+                        <p class="fact-label">Jours ouverts</p>
+                        <p class="fact-value">{{ open_days_count }}/7</p>
+                    </div>
+                    <div class="fact-card">
+                        <p class="fact-label">Portfolio</p>
+                        <p class="fact-value">{{ portfolio_count }}</p>
+                    </div>
+                </div>
+
+                <ul class="contact-list">
+                    <li class="contact-item">
+                        <strong>Telephone</strong>
+                        {{ provider.phone|default:"Non renseigne" }}
+                    </li>
+                    <li class="contact-item">
+                        <strong>Ville</strong>
+                        {{ provider.city|default:"Non renseignee" }}
+                    </li>
+                    <li class="contact-item">
+                        <strong>Adresse</strong>
+                        {{ provider.address|default:"Non renseignee" }}
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <section class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Horaires hebdomadaires</h2>
+                <p class="panel-subtitle">Disponibilites affichees aux clients</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table schedule-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 160px;">Jour</th>
+                            <th>Creneaux</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in weekly_availability %}
+                        <tr>
+                            <td class="fw-semibold">{{ day.label }}</td>
+                            <td>
+                                {% if day.slots %}
+                                    {% for slot in day.slots %}
+                                    <span class="slot-pill">{{ slot }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                <span class="closed-pill">Ferme</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <section class="panel portfolio-panel">
+        <div class="panel-head">
+            <h2 class="panel-title">Portfolio</h2>
+            <p class="panel-subtitle">Exemples de prestations realisees</p>
+        </div>
+        <div class="panel-body">
+            {% if portfolio_items %}
+            <div class="portfolio-grid">
+                {% for item in portfolio_items %}
+                <article class="portfolio-card">
+                    {% if item.image %}
+                    <img class="portfolio-image" src="{{ item.image.url }}" alt="{{ item.title|default:'Prestation' }}">
+                    {% else %}
+                    <img class="portfolio-image" src="{% static 'default_image.png' %}" alt="Image non disponible">
+                    {% endif %}
+                    <div class="portfolio-content">
+                        <h3 class="portfolio-title">{{ item.title|default:"Sans titre" }}</h3>
+                        <p class="portfolio-description">{{ item.description|default:"Aucune description"|truncatechars:95 }}</p>
+                        <p class="portfolio-price">{{ item.price }} EUR</p>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-note">Aucun element publie pour le moment.</p>
+            {% endif %}
+        </div>
+    </section>
 </div>
-
-<!-- ====== Swiper JS ====== -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-<script>
-const swiper = new Swiper('.swiper', {
-    slidesPerView: 3,
-    spaceBetween: 20,
-    navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-    },
-    breakpoints: {
-        640: { slidesPerView: 1 },
-        768: { slidesPerView: 2 },
-        1024: { slidesPerView: 3 },
-    }
-});
-</script>
 
 {% endblock %}

@@ -1,0 +1,22 @@
+{{ heading }}
+
+Bonjour {{ recipient_name }},
+
+{{ intro }}
+
+Details du rendez-vous:
+- Prestataire: {{ provider_name }}
+- Client: {{ client_name }}
+- Service: {{ service_name }}
+- Categorie: {{ category_name }}
+- Date: {{ date_label }}
+- Creneau: {{ slot_label }}
+{% if notes %}- Notes: {{ notes }}
+{% endif %}
+{{ role_note }}
+
+{{ action_label }}:
+{{ action_url }}
+
+A bientot,
+L'equipe AlloRDV

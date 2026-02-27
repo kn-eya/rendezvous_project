@@ -1,43 +1,71 @@
 {% extends "base.html" %}
 {% load socialaccount %}
 {% block content %}
-<div class="container mt-5">
+<div class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h3 class="card-title text-center mb-4">Connexion</h3>
-          {% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
+    <div class="col-lg-5 col-md-6">
+      <div class="card border-0 shadow-lg">
+        <div class="card-body p-4 p-lg-5">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <p class="text-uppercase text-muted small mb-1">Bon retour</p>
+              <h3 class="fw-bold mb-0">Connexion</h3>
+            </div>
+            <span class="badge bg-primary-subtle text-primary fw-semibold">Sécurisée</span>
+          </div>
+
+          {% comment %} messages désormais affichés dans les toasts globaux {% endcomment %}
 
           <form method="post" novalidate>
             {% csrf_token %}
             <div class="mb-3">
-              <label for="username">Nom d'utilisateur</label>
-              <input type="text" name="username" class="form-control" required>
+              <label for="username" class="form-label fw-semibold">E-mail ou nom d'utilisateur</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" name="username" id="username" class="form-control" placeholder="vous@email.com ou pseudo" required>
+              </div>
             </div>
-            <div class="mb-3">
-              <label for="password">Mot de passe</label>
-              <input type="password" name="password" class="form-control" required>
+            <div class="mb-2">
+              <label for="password" class="form-label fw-semibold">Mot de passe</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-password" aria-label="Afficher/masquer le mot de passe">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <small class="text-muted">Assure-toi d’avoir confirmé ton e-mail.</small>
+              <a href="{% url 'users:resend_confirmation' %}" class="small text-decoration-none">Renvoyer le lien</a>
+            </div>
+            <button type="submit" class="btn w-100 py-2 fw-semibold text-white" style="background:linear-gradient(135deg,#00b894,#16c2b0); border:none;">
+              Se connecter
+            </button>
           </form>
 
-          <hr>
-          <p class="text-center">Ou connectez-vous avec :</p>
-        
-          <p class="text-center mt-3">
-            Pas encore de compte ? <a href="{% url 'users:register' %}">Inscrivez-vous</a>
-          </p>
+          <hr class="my-4">
+          <p class="text-center mb-0">Pas encore de compte ? <a class="fw-semibold" href="{% url 'users:register' %}">Inscris-toi</a></p>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+  .input-group-text, .form-control { border-radius: 10px; }
+  .card { border-radius: 16px; }
+</style>
+<script>
+  (function() {
+    const btn = document.getElementById('toggle-password');
+    const input = document.getElementById('password');
+    if (!btn || !input) return;
+    btn.addEventListener('click', () => {
+      const isPwd = input.type === 'password';
+      input.type = isPwd ? 'text' : 'password';
+      btn.querySelector('i').className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+  })();
+</script>
 {% endblock %}

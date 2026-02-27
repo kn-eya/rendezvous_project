@@ -10,18 +10,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --color-primary: #00b894;
-            --color-secondary: #6c5ce7;
-            --color-gradient: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            --color-primary: #0FB59C;
+            --color-primary-dark: #0A8A78;
+            --color-secondary: #3F5BFF;
+            --color-accent: #F4B740;
+            --color-gradient: linear-gradient(120deg, var(--color-primary), var(--color-secondary));
             --color-light: #ffffff;
-            --color-dark: #1f2937;
+            --color-dark: #0F172A;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -30,90 +35,223 @@
 
         main { flex: 1; }
 
-        .navbar { background: var(--color-gradient); }
+        .navbar {
+            background: linear-gradient(120deg, #044d45 0%, #1a2678 100%);
+            backdrop-filter: blur(7px) saturate(120%);
+            box-shadow: 0 14px 36px rgba(0,0,0,0.25);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
 
         .navbar .navbar-brand,
         .navbar .nav-link {
-            color: var(--color-light) !important;
-            font-weight: 500;
+            color: #f8fafc !important;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .navbar .nav-link {
+            position: relative;
+            padding: 0.55rem 0.95rem;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: all 0.2s ease;
+        }
+
+        .navbar .nav-link .nav-ic {
+            font-size: 0.95rem;
+            line-height: 1;
+            opacity: 0.92;
+        }
+
+        .navbar .nav-link.icon-only {
+            justify-content: center;
+            min-width: 42px;
+            padding-left: 0.7rem;
+            padding-right: 0.7rem;
+        }
+
+        .navbar .nav-link.icon-only .nav-ic {
+            font-size: 1.05rem;
+            opacity: 1;
+        }
+
+        .navbar .nav-link::after {
+            content: "";
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 6px;
+            height: 3px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.65);
+            opacity: 0;
+            transform: translateY(4px);
+            transition: all 0.2s ease;
         }
 
         .navbar .nav-link:hover {
-            color: #ffdd57 !important;
+            color: #ffffff !important;
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar .nav-link.active {
+            color: #ffffff !important;
+            background: rgba(255,255,255,0.16);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.14);
+        }
+
+        .navbar .nav-link:hover::after,
+        .navbar .nav-link.active::after {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav-cta {
+            border: none;
+            color: #fdfdfd !important;
+            box-shadow: none;
+            background: transparent;
+        }
+
+        .nav-cta:hover,
+        .nav-cta.active {
+            background: #ffffff;
+            color: #0f172a !important;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+            border: none;
+        }
+
+        .navbar-toggler {
+            border-color: rgba(255,255,255,0.55);
+        }
+        .navbar-toggler:focus { box-shadow: 0 0 0 0.1rem rgba(255,255,255,0.4); }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255,0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
         /* Logo professionnel moderne */
-.navbar-brand img {
-    width: 65px !important;
-    height: 65px !important;
-    border-radius: 16px;           /* Coins arrondis élégants */
-    box-shadow: 
-        0 8px 32px rgba(0,184,148,0.3),  /* Ombre verte douce */
-        0 2px 8px rgba(0,0,0,0.15);     /* Ombre subtile */
-    backdrop-filter: blur(10px);     /* Effet verre dépoli */
-    border: 2px solid rgba(255,255,255,0.2); /* Bordure subtile */
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    z-index: 10;
-}
+        .logo-wrap {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            padding: 6px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.08));
+            box-shadow:
+                0 8px 24px rgba(0,0,0,0.18),
+                0 0 0 1px rgba(255,255,255,0.22);
+            display: grid;
+            place-items: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
 
-.navbar-brand img::before {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    background: linear-gradient(45deg, #00b894, #6c5ce7, #00b894);
-    border-radius: 20px;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
+        .logo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(1.06);
+        }
 
-.navbar-brand:hover img {
-    transform: translateY(-4px) scale(1.08);
-    box-shadow: 
-        0 20px 40px rgba(0,184,148,0.4),
-        0 0 0 1px rgba(0,184,148,0.5);
-}
+        .navbar-brand:hover .logo-wrap {
+            transform: translateY(-3px);
+            box-shadow:
+                0 14px 32px rgba(0,0,0,0.22),
+                0 0 0 1px rgba(255,255,255,0.35);
+        }
 
-.navbar-brand:hover img::before {
-    opacity: 1;
-}
+        .navbar-brand {
+            padding: 0.55rem 0 !important;
+        }
 
-/* Navbar légèrement ajustée */
-.navbar-brand {
-    padding: 0.75rem 1rem !important;
-}
+        .brand-text .brand-title {
+            display: block;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+        .brand-text .brand-sub {
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            letter-spacing: 0.01em;
+        }
 
 
         footer {
-            background: var(--color-gradient);
+            background: linear-gradient(120deg, #044d45 0%, #1a2678 100%);
             color: var(--color-light);
-            padding: 2rem 1rem;
+            padding: 2.5rem 1rem;
             text-align: center;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.12);
         }
 
         footer a { color: var(--color-light); }
         footer a:hover { color: var(--color-secondary); }
 
         .btn-primary {
-            background-color: var(--color-primary);
-            border-color: var(--color-primary);
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            border-color: transparent;
             color: var(--color-light);
             border-radius: 50px;
             font-weight: bold;
             padding: 0.75rem 2rem;
-            transition: transform 0.3s;
+            transition: transform 0.2s ease, filter 0.2s ease;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        .notif-link {
+            overflow: visible;
         }
 
         #notif-count {
-            font-size: 0.75rem;
-            padding: 0.25em 0.5em;
+            min-width: 1.25rem;
+            height: 1.25rem;
+            padding: 0 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            line-height: 1;
+            border: 2px solid #0f172a;
+            box-shadow: 0 8px 18px rgba(220, 38, 38, 0.38);
+        }
+
+        .notif-link.has-unread #notif-count {
+            animation: notifPulse 1.4s ease-in-out infinite;
+        }
+
+        .notif-link.has-unread .nav-ic {
+            color: #fff;
+        }
+
+        @keyframes notifPulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.08);
+            }
+        }
+
+        /* Toast container */
+        .toast-stack {
+            position: fixed;
+            top: 80px;
+            right: 16px;
+            z-index: 1100;
+            width: min(360px, 92vw);
+        }
+        .toast-stack .toast {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
         }
     </style>
 </head>
@@ -125,14 +263,17 @@
     <div class="container">
 
         <!-- Logo -->
-        <a class="navbar-brand d-flex align-items-center"
+        <a class="navbar-brand d-flex align-items-center gap-2"
            href="{% url 'appointments:acceuil' %}">
-            <img src="{% static 'images/Logo..png' %}" 
-     alt="AlloRDV Plomberie" 
-     class="me-2"
-     style="filter: brightness(1.1);">
-
-         
+            <div class="logo-wrap">
+                <img src="{% static 'images/Logo..png' %}"
+                     alt="AlloRDV"
+                     loading="lazy">
+            </div>
+            <div class="brand-text d-none d-md-block">
+                <span class="brand-title">AlloRDV</span>
+                <small class="brand-sub">Réservez en confiance</small>
+            </div>
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -146,63 +287,68 @@
 
             {% if user.is_authenticated %}
 
-                <!-- ========= CLIENT ========= -->
-                {% if user.profile.role == "client" %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'appointments:acceuil' %}#services-section">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'appointments:acceuil' %}#about-section">À propos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'appointments:acceuil' %}#testimonials-section">Témoignages</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'appointments:acceuil' %}#contact-section">Contact</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'appointments:my_appointments' %}">Mes rendez-vous</a>
-                    </li>
-                {% endif %}
-
-                <!-- ========= PRESTATAIRE ========= -->
-                {% if user.profile.role == "provider" %}
+                <!-- ========= CLIENT / PRESTATAIRE ========= -->
+                {% if user_profile and user_profile.role == "provider" and user_provider %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'appointments:provider_dashboard' %}">
-                            📊 Dashboard
+                            <i class="bi bi-speedometer2 nav-ic"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{% url 'appointments:provider_detail' provider_id=user.provider.id %}">
-                           👤 Mon profil
+                           href="{% url 'appointments:provider_detail' provider_id=user_provider.id %}">
+                           <i class="bi bi-person-circle nav-ic"></i>Mon profil
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
                            href="{% url 'appointments:provider_edit_profile' %}">
-                           ✏️ Modifier profil
+                           <i class="bi bi-pencil-square nav-ic"></i>Modifier profil
                         </a>
                     </li>
-                      <li class="nav-item">
-        <a class="nav-link"
-           href="{% url 'appointments:provider_agenda' provider_id=user.provider.id %}">
-           📅 Mon calendrier
-        </a>
-    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{% url 'appointments:provider_agenda' provider_id=user_provider.id %}">
+                           <i class="bi bi-calendar3 nav-ic"></i>Mon calendrier
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'appointments:acceuil' %}">
+                            <i class="bi bi-house-door nav-ic"></i>Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'appointments:services_list' %}">
+                            <i class="bi bi-grid nav-ic"></i>Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'appointments:my_appointments' %}">
+                            <i class="bi bi-calendar-check nav-ic"></i>Mes rendez-vous
+                        </a>
+                    </li>
                 {% endif %}
 
                 {% if user.is_staff %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                        <a class="nav-link" href="{% url 'dashboard:admin_dashboard' %}">
+                            <i class="bi bi-graph-up-arrow nav-ic"></i>Dashboard admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin:index' %}">
+                            <i class="bi bi-shield-lock nav-ic"></i>Admin
+                        </a>
                     </li>
                 {% endif %}
 
                 <!-- Notifications -->
                 <li class="nav-item">
-                    <a class="nav-link position-relative"
-                       href="{% url 'appointments:notifications_page' %}">
-                        <i class="bi bi-bell"></i>
+                    <a id="notificationsNavLink" class="nav-link icon-only position-relative notif-link"
+                       href="{% url 'appointments:notifications_page' %}"
+                       aria-label="Notifications">
+                        <i id="notificationsBellIcon" class="bi bi-bell nav-ic"></i>
                         <span id="notif-count"
                               class="position-absolute top-0 start-100 translate-middle
                                      badge rounded-pill bg-danger"
@@ -212,7 +358,7 @@
 
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'users:logout' %}">
-                        Déconnexion
+                        <i class="bi bi-box-arrow-right nav-ic"></i>Deconnexion
                     </a>
                 </li>
 
@@ -220,22 +366,39 @@
 
                 <!-- ========= VISITEUR ========= -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#services-section">Services</a>
+                    <a class="nav-link" href="{% url 'appointments:acceuil' %}">
+                        <i class="bi bi-house-door nav-ic"></i>Accueil
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#about-section">À propos</a>
+                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#services-section">
+                        <i class="bi bi-grid nav-ic"></i>Services
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#testimonials-section">Témoignages</a>
+                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#about-section">
+                        <i class="bi bi-info-circle nav-ic"></i>A propos
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#contact-section">Contact</a>
+                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#testimonials-section">
+                        <i class="bi bi-chat-quote nav-ic"></i>Temoignages
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'users:login' %}">Connexion</a>
+                    <a class="nav-link" href="{% url 'appointments:acceuil' %}#contact-section">
+                        <i class="bi bi-envelope nav-ic"></i>Contact
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'users:register' %}">Inscription</a>
+                    <a class="nav-link nav-cta" href="{% url 'users:login' %}">
+                        <i class="bi bi-box-arrow-in-right nav-ic"></i>Connexion
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:register' %}">
+                        <i class="bi bi-person-plus nav-ic"></i>Inscription
+                    </a>
                 </li>
 
             {% endif %}
@@ -246,6 +409,21 @@
 
 <!-- ================= CONTENT ================= -->
 <main class="py-4">
+    <div class="toast-stack" aria-live="polite" aria-atomic="true">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="toast align-items-center text-bg-{{ message.tags|default:'info' }} show mb-2" role="alert">
+            <div class="d-flex">
+              <div class="toast-body">
+                {{ message }}
+              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fermer"></button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
     {% block content %}{% endblock %}
 </main>
 
@@ -268,9 +446,21 @@ function updateNotifications() {
         url: "{% url 'appointments:ajax_unread_count' %}",
         method: "GET",
         success: function(data) {
-            $('#notif-count').text(data.unread);
-            if (data.unread > 0) $('#notif-count').show();
-            else $('#notif-count').hide();
+            const unread = Number(data.unread || 0);
+            const badge = $('#notif-count');
+            const link = $('#notificationsNavLink');
+            const bellIcon = $('#notificationsBellIcon');
+
+            if (unread > 0) {
+                badge.text(unread > 99 ? '99+' : unread);
+                badge.show();
+                link.addClass('has-unread');
+                bellIcon.removeClass('bi-bell').addClass('bi-bell-fill');
+            } else {
+                badge.hide();
+                link.removeClass('has-unread');
+                bellIcon.removeClass('bi-bell-fill').addClass('bi-bell');
+            }
         }
     });
 }
@@ -281,6 +471,67 @@ $(document).ready(function() {
 });
 </script>
 {% endif %}
+
+<script>
+// Active state précis : privilégie le hash, sinon le lien sans hash du même chemin
+(function() {
+  const normalize = (p) => p.replace(/\/+$/, '') || '/';
+  const currentPath = normalize(window.location.pathname);
+  const currentHash = window.location.hash;
+  const links = document.querySelectorAll('.navbar .nav-link');
+
+  links.forEach(l => l.classList.remove('active'));
+
+  let matched = false;
+
+  if (currentHash) {
+    links.forEach(link => {
+      try {
+        const url = new URL(link.href);
+        if (normalize(url.pathname) === currentPath && url.hash === currentHash) {
+          link.classList.add('active');
+          matched = true;
+        }
+      } catch (e) {}
+    });
+  }
+
+  if (!matched) {
+    links.forEach(link => {
+      try {
+        const url = new URL(link.href);
+        if (normalize(url.pathname) === currentPath && !url.hash) {
+          link.classList.add('active');
+          matched = true;
+        }
+      } catch (e) {}
+    });
+  }
+
+  if (!matched) {
+    // Fallback : premier lien qui partage le chemin, hash ou non
+    links.forEach(link => {
+      if (matched) return;
+      try {
+        const url = new URL(link.href);
+        if (normalize(url.pathname) === currentPath) {
+          link.classList.add('active');
+          matched = true;
+        }
+      } catch (e) {}
+    });
+  }
+})();
+
+// Bootstrap toasts auto-init
+document.addEventListener('DOMContentLoaded', () => {
+  const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  const bs = typeof window !== 'undefined' ? window.bootstrap : undefined;
+  if (bs?.Toast) {
+    toastElList.forEach(el => bs.Toast.getOrCreateInstance(el, { delay: 6000 }).show());
+  }
+});
+</script>
 
 </body>
 </html>
